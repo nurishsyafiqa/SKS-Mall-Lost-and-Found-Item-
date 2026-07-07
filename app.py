@@ -1499,5 +1499,164 @@ def qr_codes():
                          track_qr=track_qr,
                          base_url=base_url)
 
+# ========== DATABASE SETUP ROUTE (AUTO-CREATE TABLES) ==========
+@app.route('/setup-db')
+def setup_db():
+    """Create all database tables automatically"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Create users table
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            role TEXT DEFAULT 'staff',
+            full_name TEXT,
+            email TEXT,
+            is_active INTEGER DEFAULT 1,
+            failed_login_attempts INTEGER DEFAULT 0,
+            lockout_time TIMESTAMP,
+            known_devices TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+        
+        # Create items table
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            type TEXT NOT NULL,
+            category TEXT NOT NULL,
+            description TEXT,
+            color TEXT,
+            brand TEXT,
+            location_found_lost TEXT,
+            date_reported DATE,
+            status TEXT DEFAULT 'open',
+            claim_id TEXT,
+            phone TEXT,
+            verification_question1 TEXT,
+            verification_answer1 TEXT,
+            verification_question2 TEXT,
+            verification_answer2 TEXT,
+            serial_number TEXT,
+            claim_date DATE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+        
+        # Create claims table
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS claims (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            item_id INTEGER NOT NULL,
+            claimant_name TEXT NOT NULL,
+            claimant_contact TEXT NOT NULL,
+            claimant_phone TEXT,
+            status TEXT DEFAULT 'pending',
+            verification_notes TEXT,
+            claim_id TEXT,
+            id_verified INTEGER DEFAULT 0,
+            id_card_number TEXT,
+            verification_answers TEXT,
+            answers_match TEXT,
+            claim_date DATE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+        
+        # Create matches table
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS matches (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            lost_item_id INTEGER NOT NULL,
+            found_item_id INTEGER NOT NULL,
+            match_score INTEGER,
+            status TEXT DEFAULT 'pending',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+        
+        # Create activity_log table
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS activity_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            action TEXT,
+            details TEXT,
+            ip_address TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+        
+        # Create email_log table
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS email_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            to_email TEXT,
+            subject TEXT,
+            body TEXT,
+            claim_id TEXT,
+            sent INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+        
+        # Create storage table
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS storage (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            item_id INTEGER,
+            shelf_location TEXT,
+            stored_date DATE
+        )
+        ''')
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        # Create admin user
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            admin_pw = hash_password('admin123')
+            cursor.execute('INSERT INTO users (username, password_hash, role, full_name, email, is_active) VALUES (?, ?, ?, ?, ?, ?)', ('admin', admin_pw, 'admin', 'SKS Mall Admin', 'admin@skSmall.com', 1))
+            staff_pw = hash_password('staff123')
+            cursor.execute('INSERT INTO users (username, password_hash, role, full_name, email, is_active) VALUES (?, ?, ?, ?, ?, ?)', ('staff_john', staff_pw, 'staff', 'John Staff', 'john@skSmall.com', 1))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            admin_created = True
+        except:
+            admin_created = False
+        
+        return f'''
+        <div style="text-align:center; padding:50px; font-family:Arial; max-width:600px; margin:0 auto;">
+            <h1 style="color:green;">✅ Database Setup Complete!</h1>
+            <p>All tables have been created successfully.</p>
+            {"<p style='color:green;'>✅ Admin user created: <strong>admin</strong> / <strong>admin123</strong></p>" if admin_created else "<p style='color:orange;'>⚠️ Admin user already exists or could not be created.</p>"}
+            <p style="margin-top:20px;">Login with:</p>
+            <ul style="list-style:none; padding:0;">
+                <li><strong>Username:</strong> admin</li>
+                <li><strong>Password:</strong> admin123</li>
+            </ul>
+            <a href="/login" style="display:inline-block; margin-top:20px; padding:10px 30px; background:#667eea; color:white; text-decoration:none; border-radius:5px;">Go to Login</a>
+            <br>
+            <a href="/" style="display:inline-block; margin-top:10px; padding:10px 30px; background:#4CAF50; color:white; text-decoration:none; border-radius:5px;">Go to Homepage</a>
+        </div>
+        '''
+    except Exception as e:
+        return f'''
+        <div style="text-align:center; padding:50px; font-family:Arial;">
+            <h1 style="color:red;">❌ Error Creating Tables</h1>
+            <p>{str(e)}</p>
+            <a href="/" style="display:inline-block; margin-top:20px; padding:10px 20px; background:#667eea; color:white; text-decoration:none; border-radius:5px;">Back to Home</a>
+        </div>
+        '''
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
