@@ -29,6 +29,39 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_COOKIE_SECURE'] = os.getenv('SESSION_COOKIE_SECURE', 'False').lower() == 'true'
 app.config['PERMANENT_SESSION_LIFETIME'] = int(os.getenv('PERMANENT_SESSION_LIFETIME', 30)) * 60
 
+# ========== CUSTOM JINJA2 FILTER FOR DATES ==========
+@app.template_filter('format_date')
+def format_date(value, format='%Y-%m-%d'):
+    """Format date for display, handling both string and datetime objects"""
+    if not value:
+        return '-'
+    if isinstance(value, str):
+        try:
+            from dateutil import parser
+            dt = parser.parse(value)
+            return dt.strftime(format)
+        except:
+            return value[:10] if len(value) >= 10 else value
+    if hasattr(value, 'strftime'):
+        return value.strftime(format)
+    return str(value)
+
+@app.template_filter('format_datetime')
+def format_datetime(value, format='%Y-%m-%d %H:%M'):
+    """Format datetime for display, handling both string and datetime objects"""
+    if not value:
+        return '-'
+    if isinstance(value, str):
+        try:
+            from dateutil import parser
+            dt = parser.parse(value)
+            return dt.strftime(format)
+        except:
+            return value[:16] if len(value) >= 16 else value
+    if hasattr(value, 'strftime'):
+        return value.strftime(format)
+    return str(value)
+
 # ========== SECURITY HEADERS ==========
 @app.after_request
 def add_security_headers(response):
@@ -65,16 +98,28 @@ print("=" * 50)
 
 # ========== QR CODE GENERATION ==========
 def generate_claim_qr(claim_id, item_id=None):
+    """Generate QR code for claim ID or item claim form"""
     try:
-        qr = qrcode.QRCode(version=1, box_size=10, border=4)
+        qr = qrcode.QRCode(
+            version=1,
+            box_size=10,
+            border=4
+        )
+        # Use BASE_URL from environment
         base_url = BASE_URL
+        
+        # If item_id provided, pre-select the item in claim form
         if item_id:
             track_url = f"{base_url}/claim-item?item_id={item_id}"
         else:
             track_url = f"{base_url}/track-claim?claim_id={claim_id}"
+        
         qr.add_data(track_url)
         qr.make(fit=True)
+        
         img = qr.make_image(fill_color="#4A148C", back_color="white")
+        
+        # Convert to base64 for HTML
         buffered = io.BytesIO()
         img.save(buffered, format="PNG")
         img_str = base64.b64encode(buffered.getvalue()).decode()
@@ -84,11 +129,18 @@ def generate_claim_qr(claim_id, item_id=None):
         return None
 
 def generate_claim_qr_for_page(page_url):
+    """Generate QR code for a specific page URL (for posters)"""
     try:
-        qr = qrcode.QRCode(version=1, box_size=12, border=4)
+        qr = qrcode.QRCode(
+            version=1,
+            box_size=12,
+            border=4
+        )
         qr.add_data(page_url)
         qr.make(fit=True)
+        
         img = qr.make_image(fill_color="#4A148C", back_color="white")
+        
         buffered = io.BytesIO()
         img.save(buffered, format="PNG")
         img_str = base64.b64encode(buffered.getvalue()).decode()
@@ -420,7 +472,7 @@ def staff_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# ========== FIXED MATCHING FUNCTION ==========
+# ========== MATCHING FUNCTION ==========
 def find_matches(lost_item_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -547,7 +599,7 @@ def test_email():
         </div>
         """
 
-# ========== UPDATED LOGIN ROUTE ==========
+# ========== LOGIN ROUTE ==========
 @app.route('/login', methods=['GET', 'POST'])
 @csrf_protected
 def login():
@@ -565,7 +617,6 @@ def login():
         cursor.execute("SELECT * FROM users WHERE username = ? AND is_active = 1", (username,))
         user = cursor.fetchone()
         
-        # Convert sqlite3.Row to dict for easier access
         if user:
             user = dict(user)
         
@@ -920,7 +971,7 @@ def claim_success():
         return redirect(url_for('claim_item'))
     return render_template('claim_success.html', claim=claim_data)
 
-# ========== FIXED TRACK CLAIM ==========
+# ========== TRACK CLAIM ==========
 @app.route('/track-claim', methods=['GET', 'POST'])
 @csrf_protected
 def track_claim():
@@ -1135,7 +1186,7 @@ def staff_dashboard():
     except:
         pending_claims = []
     
-    # Ready for Collection - Shows BOTH sources
+    # Ready for Collection
     cursor.execute("""
         SELECT 
             'item' as source,
@@ -1271,11 +1322,9 @@ def confirm_match(match_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Update match status
     cursor.execute("UPDATE matches SET status = 'confirmed' WHERE id = ?", (match_id,))
     conn.commit()
     
-    # Get the lost item to update status
     cursor.execute("""
         SELECT lost_item_id FROM matches WHERE id = ?
     """, (match_id,))
