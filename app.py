@@ -423,7 +423,7 @@ def staff_required(f):
 # ========== FIXED MATCHING FUNCTION ==========
 def find_matches(lost_item_id):
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()  # FIXED: removed dictionary=True
     
     cursor.execute("SELECT * FROM items WHERE id = %s", (lost_item_id,))
     lost_item = cursor.fetchone()
@@ -495,7 +495,7 @@ def log_activity(user_id, action, details=""):
 @app.route('/')
 def index():
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()  # FIXED: removed dictionary=True
     cursor.execute("""
         SELECT * FROM items 
         WHERE status != 'archived' 
@@ -561,7 +561,7 @@ def login():
             return render_template('login.html')
         
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor()  # FIXED: removed dictionary=True
         cursor.execute("SELECT * FROM users WHERE username = %s AND is_active = TRUE", (username,))
         user = cursor.fetchone()
         
@@ -790,7 +790,7 @@ def report_found():
 def search():
     query = sanitize_input(request.args.get('q', ''))
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()  # FIXED: removed dictionary=True
     if query:
         cursor.execute("""
             SELECT * FROM items 
@@ -883,7 +883,7 @@ def claim_item():
         return redirect(url_for('index'))
     
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()  # FIXED: removed dictionary=True
     
     pre_selected_item_id = request.args.get('item_id')
     
@@ -924,7 +924,7 @@ def track_claim():
     claim_id_param = request.args.get('claim_id')
     if claim_id_param:
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor()  # FIXED: removed dictionary=True
         claim = None
         
         try:
@@ -996,7 +996,7 @@ def track_claim():
         claim_id = sanitize_input(request.form['claim_id'])
         
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor()  # FIXED: removed dictionary=True
         claim = None
         
         try:
@@ -1071,7 +1071,7 @@ def track_claim():
 @staff_required
 def staff_dashboard():
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()  # FIXED: removed dictionary=True
     
     # Pending Items
     cursor.execute("""
@@ -1126,7 +1126,7 @@ def staff_dashboard():
     except:
         pending_claims = []
     
-    # ===== FIXED: Ready for Collection - Shows BOTH sources =====
+    # Ready for Collection - Shows BOTH sources
     cursor.execute("""
         SELECT 
             'item' as source,
@@ -1292,7 +1292,7 @@ def confirm_match(match_id):
 @staff_required
 def manage_items():
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()  # FIXED: removed dictionary=True
     cursor.execute("SELECT * FROM items ORDER BY date_reported DESC")
     items = cursor.fetchall()
     cursor.close()
@@ -1306,7 +1306,7 @@ def view_claim(claim_id):
     print(f"🔍 VIEW CLAIM CALLED: ID = {claim_id}")
     
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()  # FIXED: removed dictionary=True
     
     try:
         cursor.execute("""
@@ -1348,7 +1348,7 @@ def test_view():
 @admin_required
 def security_dashboard():
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()  # FIXED: removed dictionary=True
     
     try:
         cursor.execute("SELECT COUNT(*) as failed FROM activity_log WHERE action = 'failed_login'")
@@ -1384,7 +1384,7 @@ def security_dashboard():
 @admin_required
 def admin_dashboard():
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()  # FIXED: removed dictionary=True
     cursor.execute("SELECT * FROM users ORDER BY created_at DESC")
     users = cursor.fetchall()
     cursor.execute("SELECT * FROM items ORDER BY date_reported DESC")
