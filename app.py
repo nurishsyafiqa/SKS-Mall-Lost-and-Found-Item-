@@ -565,8 +565,12 @@ def login():
         cursor.execute("SELECT * FROM users WHERE username = ? AND is_active = 1", (username,))
         user = cursor.fetchone()
         
+        # Convert sqlite3.Row to dict for easier access
         if user:
-            if user['lockout_time'] and user['lockout_time'] > datetime.now():
+            user = dict(user)
+        
+        if user:
+            if user.get('lockout_time') and user['lockout_time'] > datetime.now():
                 remaining_lockout = (user['lockout_time'] - datetime.now()).seconds // 60
                 flash(f'⛔ Account locked. Please try again in {remaining_lockout + 1} minutes.', 'danger')
                 cursor.close()
