@@ -105,14 +105,16 @@ def generate_claim_qr(claim_id, item_id=None):
             box_size=10,
             border=4
         )
-        # Use BASE_URL from environment
-        base_url = BASE_URL
+        # FORCE USE RENDER URL FOR QR CODES
+        base_url = "https://sks-mall-lost-and-found-item.onrender.com"
         
         # If item_id provided, pre-select the item in claim form
         if item_id:
             track_url = f"{base_url}/claim-item?item_id={item_id}"
         else:
             track_url = f"{base_url}/track-claim?claim_id={claim_id}"
+        
+        print(f"📱 QR URL: {track_url}")  # Debug in terminal
         
         qr.add_data(track_url)
         qr.make(fit=True)
@@ -127,28 +129,7 @@ def generate_claim_qr(claim_id, item_id=None):
     except Exception as e:
         print(f"QR Error: {e}")
         return None
-
-def generate_claim_qr_for_page(page_url):
-    """Generate QR code for a specific page URL (for posters)"""
-    try:
-        qr = qrcode.QRCode(
-            version=1,
-            box_size=12,
-            border=4
-        )
-        qr.add_data(page_url)
-        qr.make(fit=True)
         
-        img = qr.make_image(fill_color="#4A148C", back_color="white")
-        
-        buffered = io.BytesIO()
-        img.save(buffered, format="PNG")
-        img_str = base64.b64encode(buffered.getvalue()).decode()
-        return img_str
-    except Exception as e:
-        print(f"QR Error: {e}")
-        return None
-
 # ========== EMAIL FUNCTIONS ==========
 def send_real_email(to_email, subject, body_html):
     if not EMAIL_ENABLED:
@@ -1397,6 +1378,54 @@ def test_view():
     <div style='text-align:center; padding:50px; font-family:Arial;'>
         <h1 style='color:green;'>✅ TEST ROUTE WORKS!</h1>
         <a href='/staff/dashboard'>Back to Dashboard</a>
+    </div>
+    """
+
+
+# ========== DEBUG MATCHES ROUTE ==========
+@app.route('/debug/matches')
+@staff_required
+def debug_matches():
+    """Debug route to check matches"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Count items
+    cursor.execute("SELECT COUNT(*) as total, type FROM items GROUP BY type")
+    item_counts = cursor.fetchall()
+    
+    # Count matches
+    cursor.execute("SELECT COUNT(*) as total, status FROM matches GROUP BY status")
+    match_counts = cursor.fetchall()
+    
+    # Get all matches with details
+    cursor.execute("""
+        SELECT m.*, 
+               l.category as lost_category, l.claim_id as lost_claim_id,
+               f.category as found_category, f.claim_id as found_claim_id
+        FROM matches m
+        JOIN items l ON m.lost_item_id = l.id
+        JOIN items f ON m.found_item_id = f.id
+    """)
+    all_matches = cursor.fetchall()
+    
+    cursor.close()
+    conn.close()
+    
+    return f"""
+    <div style='padding:20px; font-family:Arial; max-width:800px; margin:0 auto;'>
+        <h1 style='color:#667eea;'>🔍 Debug - Matches</h1>
+        
+        <h3>📊 Item Counts:</h3>
+        <pre style='background:#f5f5f5; padding:10px; border-radius:5px;'>{item_counts}</pre>
+        
+        <h3>📊 Match Counts:</h3>
+        <pre style='background:#f5f5f5; padding:10px; border-radius:5px;'>{match_counts}</pre>
+        
+        <h3>📋 All Matches ({len(all_matches)}):</h3>
+        <pre style='background:#f5f5f5; padding:10px; border-radius:5px; overflow:auto; max-height:300px;'>{all_matches}</pre>
+        
+        <p><a href='/staff/dashboard' style='display:inline-block; padding:10px 20px; background:#667eea; color:white; text-decoration:none; border-radius:5px;'>← Back to Dashboard</a></p>
     </div>
     """
 
