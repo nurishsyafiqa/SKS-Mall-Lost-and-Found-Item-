@@ -50,7 +50,7 @@
     </div>
 
     <div class="row g-4">
-        <!-- Manage Users Section - WITH EMAIL FIELD -->
+        <!-- Manage Users Section -->
         <div class="col-md-6">
             <div class="card shadow-lg border-0 h-100">
                 <div class="card-header text-white" style="background: linear-gradient(135deg, #1a1a2e, #16213e); border-bottom: 1px solid rgba(255,255,255,0.05);">
@@ -79,7 +79,7 @@
                                 </select>
                             </div>
                             
-                            <!-- ===== ADD EMAIL FIELD ===== -->
+                            <!-- Email Field -->
                             <div class="col-md-12">
                                 <div class="mb-2">
                                     <label class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
@@ -232,7 +232,7 @@
             </div>
         </div>
         
-        <!-- Activity Logs Section -->
+        <!-- ===== FIXED: Activity Logs Section ===== -->
         <div class="col-md-6">
             <div class="card shadow-lg border-0 h-100">
                 <div class="card-header text-white" style="background: linear-gradient(135deg, #1a1a2e, #16213e); border-bottom: 1px solid rgba(255,255,255,0.05);">
@@ -252,7 +252,17 @@
                             <tbody>
                                 {% for log in logs %}
                                 <tr>
-                                    <td>{{ log.created_at.strftime('%Y-%m-%d %H:%M') if log.created_at else '-' }}</td>
+                                    <td>
+                                        {% if log.created_at %}
+                                            {% if log.created_at is string %}
+                                                {{ log.created_at[:16] }}
+                                            {% else %}
+                                                {{ log.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                            {% endif %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
                                     <td>{{ log.username or 'System' }}</td>
                                     <td>{{ log.action }}</td>
                                     <td>{{ log.details[:50] if log.details else '-' }}</td>
@@ -271,7 +281,7 @@
         </div>
     </div>
 
-    <!-- Claims Section -->
+    <!-- ===== FIXED: Claims Section ===== -->
     <div class="row mt-4">
         <div class="col-md-12">
             <div class="card shadow-lg border-0">
@@ -309,7 +319,17 @@
                                             <span class="badge bg-secondary">{{ claim.status|title }}</span>
                                         {% endif %}
                                     </td>
-                                    <td>{{ claim.created_at.strftime('%Y-%m-%d') if claim.created_at else '-' }}</td>
+                                    <td>
+                                        {% if claim.created_at %}
+                                            {% if claim.created_at is string %}
+                                                {{ claim.created_at[:10] }}
+                                            {% else %}
+                                                {{ claim.created_at.strftime('%Y-%m-%d') }}
+                                            {% endif %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
