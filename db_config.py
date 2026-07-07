@@ -1,9 +1,12 @@
 import sqlite3
 import bcrypt
 import os
+from dotenv import load_dotenv
 
-# Database file path
-DB_PATH = '/tmp/sks_mall.db'
+load_dotenv()
+
+# ===== SQLite Database Path =====
+DB_PATH = os.getenv('DATABASE', 'sks_mall.db')
 
 def get_db_connection():
     """Create and return a SQLite database connection"""
