@@ -209,7 +209,7 @@ def send_claim_confirmation_email(to_email, claimant_name, claim_id, item_detail
         try:
             cursor.execute("""
                 INSERT INTO email_log (to_email, subject, body, claim_id, sent)
-                VALUES (%s, %s, %s, %s, %s)
+                VALUES (?, ?, ?, ?, ?)
             """, (to_email, subject, body_html, claim_id, EMAIL_ENABLED))
             conn.commit()
         except Exception as e:
@@ -423,9 +423,9 @@ def staff_required(f):
 # ========== FIXED MATCHING FUNCTION ==========
 def find_matches(lost_item_id):
     conn = get_db_connection()
-    cursor = conn.cursor()  # FIXED: removed dictionary=True
+    cursor = conn.cursor()
     
-    cursor.execute("SELECT * FROM items WHERE id = %s", (lost_item_id,))
+    cursor.execute("SELECT * FROM items WHERE id = ?", (lost_item_id,))
     lost_item = cursor.fetchone()
     
     if not lost_item:
@@ -463,7 +463,7 @@ def find_matches(lost_item_id):
         if score > 40:
             cursor.execute("""
                 INSERT INTO matches (lost_item_id, found_item_id, match_score, status)
-                VALUES (%s, %s, %s, 'pending')
+                VALUES (?, ?, ?, 'pending')
             """, (lost_item_id, found['id'], score))
             conn.commit()
             matches_count += 1
@@ -482,7 +482,7 @@ def log_activity(user_id, action, details=""):
     try:
         cursor.execute("""
             INSERT INTO activity_log (user_id, action, details, ip_address)
-            VALUES (%s, %s, %s, %s)
+            VALUES (?, ?, ?, ?)
         """, (user_id, action, details, request.remote_addr))
         conn.commit()
     except:
@@ -495,7 +495,7 @@ def log_activity(user_id, action, details=""):
 @app.route('/')
 def index():
     conn = get_db_connection()
-    cursor = conn.cursor()  # FIXED: removed dictionary=True
+    cursor = conn.cursor()
     cursor.execute("""
         SELECT * FROM items 
         WHERE status != 'archived' 
@@ -561,12 +561,12 @@ def login():
             return render_template('login.html')
         
         conn = get_db_connection()
-        cursor = conn.cursor()  # FIXED: removed dictionary=True
-        cursor.execute("SELECT * FROM users WHERE username = %s AND is_active = TRUE", (username,))
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE username = ? AND is_active = 1", (username,))
         user = cursor.fetchone()
         
         if user:
-            if user.get('lockout_time') and user['lockout_time'] > datetime.now():
+            if user['lockout_time'] and user['lockout_time'] > datetime.now():
                 remaining_lockout = (user['lockout_time'] - datetime.now()).seconds // 60
                 flash(f'⛔ Account locked. Please try again in {remaining_lockout + 1} minutes.', 'danger')
                 cursor.close()
@@ -577,7 +577,7 @@ def login():
             cursor.execute("""
                 UPDATE users 
                 SET failed_login_attempts = 0, lockout_time = NULL
-                WHERE id = %s
+                WHERE id = ?
             """, (user['id'],))
             conn.commit()
             clear_failed_attempts(f'login_{username}')
@@ -592,7 +592,7 @@ def login():
                     print(f"📧 Login alert sent to {user['email']}")
                 
                 new_devices = known_devices + "|" + device_info if known_devices else device_info
-                cursor.execute("UPDATE users SET known_devices = %s WHERE id = %s", (new_devices, user['id']))
+                cursor.execute("UPDATE users SET known_devices = ? WHERE id = ?", (new_devices, user['id']))
                 conn.commit()
                 flash('🔐 New device detected! A security alert has been sent to your email.', 'info')
             
@@ -625,15 +625,15 @@ def login():
                 cursor.execute("""
                     UPDATE users 
                     SET failed_login_attempts = failed_login_attempts + 1
-                    WHERE id = %s
+                    WHERE id = ?
                 """, (user['id'],))
                 
-                cursor.execute("SELECT failed_login_attempts FROM users WHERE id = %s", (user['id'],))
+                cursor.execute("SELECT failed_login_attempts FROM users WHERE id = ?", (user['id'],))
                 attempts = cursor.fetchone()
                 
                 if attempts and attempts['failed_login_attempts'] >= 5:
                     lockout_time = datetime.now() + timedelta(minutes=30)
-                    cursor.execute("UPDATE users SET lockout_time = %s WHERE id = %s", (lockout_time, user['id']))
+                    cursor.execute("UPDATE users SET lockout_time = ? WHERE id = ?", (lockout_time, user['id']))
                     conn.commit()
                     flash(f'⛔ Too many failed attempts. Account locked for 30 minutes.', 'danger')
                     log_activity(user['id'], 'account_locked', f'Account locked after 5 failed attempts from {request.remote_addr}')
@@ -696,7 +696,7 @@ def report_lost():
             INSERT INTO items (type, category, description, color, brand, location_found_lost, 
                               date_reported, phone, verification_question1, verification_answer1,
                               verification_question2, verification_answer2, serial_number)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, ('lost', category, description, color, brand, location, date.today(), 
               contact_phone, verification_question1, verification_answer1,
               verification_question2, verification_answer2, serial_number))
@@ -706,7 +706,7 @@ def report_lost():
         
         claim_id = generate_unique_claim_id('LOST', item_id)
         try:
-            cursor.execute("UPDATE items SET claim_id = %s WHERE id = %s", (claim_id, item_id))
+            cursor.execute("UPDATE items SET claim_id = ? WHERE id = ?", (claim_id, item_id))
             conn.commit()
         except Exception as e:
             print(f"Note: claim_id column not available yet: {e}")
@@ -714,7 +714,6 @@ def report_lost():
         cursor.close()
         conn.close()
         
-        # Match search with debug output
         print(f"🔍 Searching matches for new lost item ID: {item_id}")
         matches = find_matches(item_id)
         
@@ -751,7 +750,7 @@ def report_found():
         
         cursor.execute("""
             INSERT INTO items (type, category, description, color, brand, location_found_lost, date_reported, status)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, 'open')
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'open')
         """, ('found', category, description, color, brand, location, date.today()))
         
         conn.commit()
@@ -759,7 +758,7 @@ def report_found():
         
         claim_id = generate_unique_claim_id('FOUND', item_id)
         try:
-            cursor.execute("UPDATE items SET claim_id = %s WHERE id = %s", (claim_id, item_id))
+            cursor.execute("UPDATE items SET claim_id = ? WHERE id = ?", (claim_id, item_id))
             conn.commit()
         except Exception as e:
             print(f"Note: claim_id column not available yet: {e}")
@@ -768,7 +767,7 @@ def report_found():
             try:
                 cursor.execute("""
                     INSERT INTO storage (item_id, shelf_location, stored_date)
-                    VALUES (%s, %s, %s)
+                    VALUES (?, ?, ?)
                 """, (item_id, storage_loc, date.today()))
                 conn.commit()
             except:
@@ -790,11 +789,11 @@ def report_found():
 def search():
     query = sanitize_input(request.args.get('q', ''))
     conn = get_db_connection()
-    cursor = conn.cursor()  # FIXED: removed dictionary=True
+    cursor = conn.cursor()
     if query:
         cursor.execute("""
             SELECT * FROM items 
-            WHERE (description LIKE %s OR category LIKE %s OR brand LIKE %s)
+            WHERE (description LIKE ? OR category LIKE ? OR brand LIKE ?)
             AND status != 'archived'
             ORDER BY date_reported DESC
         """, (f'%{query}%', f'%{query}%', f'%{query}%'))
@@ -834,20 +833,20 @@ def claim_item():
             cursor.execute("""
                 INSERT INTO claims (item_id, claimant_name, claimant_contact, 
                                   status, verification_notes, claim_date)
-                VALUES (%s, %s, %s, 'pending', %s, CURDATE())
+                VALUES (?, ?, ?, 'pending', ?, CURDATE())
             """, (item_id, claimant_name, claimant_email, verification_details))
             conn.commit()
             claim_db_id = cursor.lastrowid
             
             claim_id = generate_unique_claim_id('CLM', claim_db_id)
             try:
-                cursor.execute("UPDATE claims SET claim_id = %s WHERE id = %s", (claim_id, claim_db_id))
+                cursor.execute("UPDATE claims SET claim_id = ? WHERE id = ?", (claim_id, claim_db_id))
                 conn.commit()
             except Exception as e:
                 print(f"Note: claim_id column not available yet: {e}")
                 claim_id = f"CLM-{datetime.now().strftime('%Y%m%d')}-{str(claim_db_id).zfill(4)}"
             
-            cursor.execute("SELECT category, description FROM items WHERE id = %s", (item_id,))
+            cursor.execute("SELECT category, description FROM items WHERE id = ?", (item_id,))
             item = cursor.fetchone()
             
             qr_code = generate_claim_qr(claim_id)
@@ -883,7 +882,7 @@ def claim_item():
         return redirect(url_for('index'))
     
     conn = get_db_connection()
-    cursor = conn.cursor()  # FIXED: removed dictionary=True
+    cursor = conn.cursor()
     
     pre_selected_item_id = request.args.get('item_id')
     
@@ -924,7 +923,7 @@ def track_claim():
     claim_id_param = request.args.get('claim_id')
     if claim_id_param:
         conn = get_db_connection()
-        cursor = conn.cursor()  # FIXED: removed dictionary=True
+        cursor = conn.cursor()
         claim = None
         
         try:
@@ -932,7 +931,7 @@ def track_claim():
                 cursor.execute("""
                     SELECT *, 'item' as source
                     FROM items 
-                    WHERE claim_id = %s
+                    WHERE claim_id = ?
                 """, (claim_id_param,))
                 item = cursor.fetchone()
                 
@@ -966,7 +965,7 @@ def track_claim():
                     SELECT c.*, i.category, i.description, i.location_found_lost
                     FROM claims c
                     JOIN items i ON c.item_id = i.id
-                    WHERE c.claim_id = %s
+                    WHERE c.claim_id = ?
                 """, (claim_id_param,))
                 claim_data = cursor.fetchone()
                 
@@ -996,7 +995,7 @@ def track_claim():
         claim_id = sanitize_input(request.form['claim_id'])
         
         conn = get_db_connection()
-        cursor = conn.cursor()  # FIXED: removed dictionary=True
+        cursor = conn.cursor()
         claim = None
         
         try:
@@ -1004,7 +1003,7 @@ def track_claim():
                 cursor.execute("""
                     SELECT *, 'item' as source
                     FROM items 
-                    WHERE claim_id = %s
+                    WHERE claim_id = ?
                 """, (claim_id,))
                 item = cursor.fetchone()
                 
@@ -1038,7 +1037,7 @@ def track_claim():
                     SELECT c.*, i.category, i.description, i.location_found_lost
                     FROM claims c
                     JOIN items i ON c.item_id = i.id
-                    WHERE c.claim_id = %s
+                    WHERE c.claim_id = ?
                 """, (claim_id,))
                 claim_data = cursor.fetchone()
                 
@@ -1071,7 +1070,7 @@ def track_claim():
 @staff_required
 def staff_dashboard():
     conn = get_db_connection()
-    cursor = conn.cursor()  # FIXED: removed dictionary=True
+    cursor = conn.cursor()
     
     # Pending Items
     cursor.execute("""
@@ -1165,7 +1164,6 @@ def staff_dashboard():
     """)
     ready_collection = cursor.fetchall()
     
-    # Debug output
     print(f"🔍 Ready for Collection: {len(ready_collection)} items")
     for item in ready_collection:
         print(f"   {item['claim_id']} - {item['category']} - Source: {item['source']}")
@@ -1206,24 +1204,24 @@ def verify_claim(claim_id):
             cursor.execute("""
                 UPDATE claims 
                 SET status = 'approved', 
-                    id_verified = %s, 
-                    id_card_number = %s, 
-                    verification_answers = %s, 
-                    answers_match = %s
-                WHERE id = %s
+                    id_verified = ?, 
+                    id_card_number = ?, 
+                    verification_answers = ?, 
+                    answers_match = ?
+                WHERE id = ?
             """, (id_verified, id_card_number, claimant_answers, answers_match, claim_id))
             
-            cursor.execute("SELECT item_id FROM claims WHERE id = %s", (claim_id,))
+            cursor.execute("SELECT item_id FROM claims WHERE id = ?", (claim_id,))
             claim_data = cursor.fetchone()
             
             if claim_data:
                 cursor.execute("""
                     UPDATE items 
                     SET status = 'claimed', claim_date = CURDATE()
-                    WHERE id = %s
+                    WHERE id = ?
                 """, (claim_data[0],))
                 
-                cursor.execute("SELECT claimant_contact FROM claims WHERE id = %s", (claim_id,))
+                cursor.execute("SELECT claimant_contact FROM claims WHERE id = ?", (claim_id,))
                 claimant = cursor.fetchone()
                 if claimant and claimant[0]:
                     send_claim_status_email(claimant[0], "Valued Customer", f"CLM-{claim_id}", 'approved', "")
@@ -1237,9 +1235,9 @@ def verify_claim(claim_id):
             cursor.execute("""
                 UPDATE claims 
                 SET status = 'rejected', 
-                    verification_answers = %s, 
-                    answers_match = %s
-                WHERE id = %s
+                    verification_answers = ?, 
+                    answers_match = ?
+                WHERE id = ?
             """, (claimant_answers, answers_match, claim_id))
             flash('❌ Claim rejected.', 'danger')
         
@@ -1264,12 +1262,12 @@ def confirm_match(match_id):
     cursor = conn.cursor()
     
     # Update match status
-    cursor.execute("UPDATE matches SET status = 'confirmed' WHERE id = %s", (match_id,))
+    cursor.execute("UPDATE matches SET status = 'confirmed' WHERE id = ?", (match_id,))
     conn.commit()
     
     # Get the lost item to update status
     cursor.execute("""
-        SELECT lost_item_id FROM matches WHERE id = %s
+        SELECT lost_item_id FROM matches WHERE id = ?
     """, (match_id,))
     match_data = cursor.fetchone()
     
@@ -1277,7 +1275,7 @@ def confirm_match(match_id):
         cursor.execute("""
             UPDATE items 
             SET status = 'ready_for_collection' 
-            WHERE id = %s
+            WHERE id = ?
         """, (match_data[0],))
         conn.commit()
         print(f"✅ Item {match_data[0]} marked as ready for collection")
@@ -1292,7 +1290,7 @@ def confirm_match(match_id):
 @staff_required
 def manage_items():
     conn = get_db_connection()
-    cursor = conn.cursor()  # FIXED: removed dictionary=True
+    cursor = conn.cursor()
     cursor.execute("SELECT * FROM items ORDER BY date_reported DESC")
     items = cursor.fetchall()
     cursor.close()
@@ -1306,7 +1304,7 @@ def view_claim(claim_id):
     print(f"🔍 VIEW CLAIM CALLED: ID = {claim_id}")
     
     conn = get_db_connection()
-    cursor = conn.cursor()  # FIXED: removed dictionary=True
+    cursor = conn.cursor()
     
     try:
         cursor.execute("""
@@ -1315,7 +1313,7 @@ def view_claim(claim_id):
                    i.verification_question2, i.verification_answer2
             FROM claims c
             JOIN items i ON c.item_id = i.id
-            WHERE c.id = %s
+            WHERE c.id = ?
         """, (claim_id,))
         claim = cursor.fetchone()
         print(f"📋 Claim found: {claim is not None}")
@@ -1348,7 +1346,7 @@ def test_view():
 @admin_required
 def security_dashboard():
     conn = get_db_connection()
-    cursor = conn.cursor()  # FIXED: removed dictionary=True
+    cursor = conn.cursor()
     
     try:
         cursor.execute("SELECT COUNT(*) as failed FROM activity_log WHERE action = 'failed_login'")
@@ -1368,7 +1366,7 @@ def security_dashboard():
     except:
         recent_logs = []
     
-    cursor.execute("SELECT COUNT(*) as total FROM users WHERE is_active = TRUE")
+    cursor.execute("SELECT COUNT(*) as total FROM users WHERE is_active = 1")
     active_users = cursor.fetchone()
     
     cursor.close()
@@ -1384,7 +1382,7 @@ def security_dashboard():
 @admin_required
 def admin_dashboard():
     conn = get_db_connection()
-    cursor = conn.cursor()  # FIXED: removed dictionary=True
+    cursor = conn.cursor()
     cursor.execute("SELECT * FROM users ORDER BY created_at DESC")
     users = cursor.fetchall()
     cursor.execute("SELECT * FROM items ORDER BY date_reported DESC")
@@ -1430,7 +1428,7 @@ def create_user():
     try:
         cursor.execute("""
             INSERT INTO users (username, password_hash, role, full_name, email, is_active, failed_login_attempts, lockout_time)
-            VALUES (%s, %s, %s, %s, %s, TRUE, 0, NULL)
+            VALUES (?, ?, ?, ?, ?, 1, 0, NULL)
         """, (username, hashed_pw, role, full_name, email))
         conn.commit()
         flash(f'✅ User {username} created successfully! Login alerts will be sent to {email}', 'success')
@@ -1447,7 +1445,7 @@ def create_user():
 def delete_user(user_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM users WHERE id = %s AND role != 'admin'", (user_id,))
+    cursor.execute("DELETE FROM users WHERE id = ? AND role != 'admin'", (user_id,))
     conn.commit()
     cursor.close()
     conn.close()
@@ -1459,10 +1457,10 @@ def delete_user(user_id):
 def delete_item(item_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM storage WHERE item_id = %s", (item_id,))
-    cursor.execute("DELETE FROM claims WHERE item_id = %s", (item_id,))
-    cursor.execute("DELETE FROM matches WHERE lost_item_id = %s OR found_item_id = %s", (item_id, item_id))
-    cursor.execute("DELETE FROM items WHERE id = %s", (item_id,))
+    cursor.execute("DELETE FROM storage WHERE item_id = ?", (item_id,))
+    cursor.execute("DELETE FROM claims WHERE item_id = ?", (item_id,))
+    cursor.execute("DELETE FROM matches WHERE lost_item_id = ? OR found_item_id = ?", (item_id, item_id))
+    cursor.execute("DELETE FROM items WHERE id = ?", (item_id,))
     conn.commit()
     cursor.close()
     conn.close()
@@ -1499,7 +1497,7 @@ def qr_codes():
                          track_qr=track_qr,
                          base_url=base_url)
 
-# ========== DATABASE SETUP ROUTE (AUTO-CREATE TABLES) ==========
+# ========== DATABASE SETUP ROUTE ==========
 @app.route('/setup-db')
 def setup_db():
     """Create all database tables automatically"""
@@ -1638,15 +1636,13 @@ def setup_db():
         <div style="text-align:center; padding:50px; font-family:Arial; max-width:600px; margin:0 auto;">
             <h1 style="color:green;">✅ Database Setup Complete!</h1>
             <p>All tables have been created successfully.</p>
-            {"<p style='color:green;'>✅ Admin user created: <strong>admin</strong> / <strong>admin123</strong></p>" if admin_created else "<p style='color:orange;'>⚠️ Admin user already exists or could not be created.</p>"}
+            {"<p style='color:green;'>✅ Admin user created: <strong>admin</strong> / <strong>admin123</strong></p>" if admin_created else "<p style='color:orange;'>⚠️ Admin user already exists.</p>"}
             <p style="margin-top:20px;">Login with:</p>
             <ul style="list-style:none; padding:0;">
                 <li><strong>Username:</strong> admin</li>
                 <li><strong>Password:</strong> admin123</li>
             </ul>
             <a href="/login" style="display:inline-block; margin-top:20px; padding:10px 30px; background:#667eea; color:white; text-decoration:none; border-radius:5px;">Go to Login</a>
-            <br>
-            <a href="/" style="display:inline-block; margin-top:10px; padding:10px 30px; background:#4CAF50; color:white; text-decoration:none; border-radius:5px;">Go to Homepage</a>
         </div>
         '''
     except Exception as e:
