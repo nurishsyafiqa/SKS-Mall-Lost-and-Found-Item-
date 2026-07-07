@@ -920,7 +920,7 @@ def claim_success():
         return redirect(url_for('claim_item'))
     return render_template('claim_success.html', claim=claim_data)
 
-# ========== TRACK CLAIM ==========
+# ========== FIXED TRACK CLAIM ==========
 @app.route('/track-claim', methods=['GET', 'POST'])
 @csrf_protected
 def track_claim():
@@ -940,7 +940,6 @@ def track_claim():
                 item = cursor.fetchone()
                 
                 if item:
-                    # ===== CONVERT TO DICT =====
                     item = dict(item)
                     
                     if item['status'] == 'ready_for_collection':
@@ -1016,7 +1015,6 @@ def track_claim():
                 item = cursor.fetchone()
                 
                 if item:
-                    # ===== CONVERT TO DICT =====
                     item = dict(item)
                     
                     if item['status'] == 'ready_for_collection':
@@ -1077,7 +1075,7 @@ def track_claim():
     
     return render_template('track_claim.html')
 
-# ========== FIXED STAFF DASHBOARD ==========
+# ========== STAFF DASHBOARD ==========
 @app.route('/staff/dashboard')
 @staff_required
 def staff_dashboard():
