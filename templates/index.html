@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Hero Section -->
+<div class="hero text-center">
+    <h1 class="display-4 fw-bold mb-3" style="background: linear-gradient(135deg, #667eea 0%, #f093fb 100%); -webkit-background-clip: text; background-clip: text; color: transparent;">
+        Welcome to SKS Mall
+    </h1>
+    <p class="lead mb-4" style="color: rgba(255,255,255,0.9);">
+        Lost something at SKS Mall? Found something? We're here to help reunite you with your belongings.
+    </p>
+    <div class="row justify-content-center g-3">
+        <div class="col-md-3 col-6">
+            <a href="/report-lost" class="btn btn-danger btn-lg w-100 py-3">
+                <i class="fas fa-frown me-2"></i> Lost Item
+            </a>
+        </div>
+        <div class="col-md-3 col-6">
+            <a href="/report-found" class="btn btn-success btn-lg w-100 py-3">
+                <i class="fas fa-smile me-2"></i> Found Item
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Row -->
+<div class="row g-4 mt-4 mb-5">
+    <div class="col-md-3 col-6">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea, #764ba2); width: 50px; height: 50px; border-radius: 15px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                <i class="fas fa-database fa-2x"></i>
+            </div>
+            <div class="stat-number display-4 fw-bold">{{ total }}</div>
+            <div class="stat-label">Total Reports</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb, #f5576c); width: 50px; height: 50px; border-radius: 15px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                <i class="fas fa-frown fa-2x"></i>
+            </div>
+            <div class="stat-number display-4 fw-bold">{{ lost_count }}</div>
+            <div class="stat-label">Lost Items</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe, #00f2fe); width: 50px; height: 50px; border-radius: 15px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                <i class="fas fa-smile fa-2x"></i>
+            </div>
+            <div class="stat-number display-4 fw-bold">{{ found_count }}</div>
+            <div class="stat-label">Found Items</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #f6d365, #fda085); width: 50px; height: 50px; border-radius: 15px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                <i class="fas fa-clock fa-2x"></i>
+            </div>
+            <div class="stat-number display-4 fw-bold">{{ open_cases }}</div>
+            <div class="stat-label">Open Cases</div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Reports -->
+<div class="card shadow-lg border-0">
+    <div class="card-header bg-gradient-dark" style="background: linear-gradient(135deg, #1a1a2e, #16213e); border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <h5 class="mb-0"><i class="fas fa-history me-2"></i> Recent Reports at SKS Mall</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead style="background: rgba(255,255,255,0.03);">
+                    <tr>
+                        <th><i class="fas fa-tag me-1"></i> Type</th>
+                        <th><i class="fas fa-box me-1"></i> Category</th>
+                        <th><i class="fas fa-align-left me-1"></i> Description</th>
+                        <th><i class="fas fa-map-marker-alt me-1"></i> Location</th>
+                        <th><i class="fas fa-calendar me-1"></i> Date</th>
+                        <th><i class="fas fa-info-circle me-1"></i> Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in recent_items %}
+                    <tr>
+                        <td>
+                            <span class="badge bg-{{ 'danger' if item.type == 'lost' else 'success' }} px-3 py-2">
+                                {{ item.type|upper }}
+                            </span>
+                        </td>
+                        <td><strong>{{ item.category }}</strong></td>
+                        <td>{{ item.description[:50] }}{% if item.description|length > 50 %}...{% endif %}</td>
+                        <td><i class="fas fa-map-marker-alt text-muted me-1"></i> {{ item.location_found_lost }}</td>
+                        <td>{{ item.date_reported }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'secondary' if item.status == 'open' else 'warning' if item.status == 'pending' else 'success' if item.status == 'claimed' else 'info' }}">
+                                {{ item.status|upper }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- SKS Mall Information -->
+<div class="row mt-5">
+    <div class="col-md-12">
+        <div class="card shadow-lg border-0">
+            <div class="card-body text-center p-4">
+                <h4 class="mb-3"><i class="fas fa-store me-2" style="color: #667eea;"></i> About SKS Mall Lost & Found</h4>
+                <div class="row mt-4">
+                    <div class="col-md-4 mb-3">
+                        <div class="p-3 rounded-3" style="background: rgba(255,255,255,0.03);">
+                            <i class="fas fa-map-marker-alt fa-3x mb-3" style="color: #667eea;"></i>
+                            <h5 class="fw-bold">Location</h5>
+                            <p class="text-muted mb-0">Level 1, Customer Service Counter<br>SKS Mall</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="p-3 rounded-3" style="background: rgba(255,255,255,0.03);">
+                            <i class="fas fa-clock fa-3x mb-3" style="color: #4facfe;"></i>
+                            <h5 class="fw-bold">Operating Hours</h5>
+                            <p class="text-muted mb-0">10:00 AM - 10:00 PM Daily<br>Including Public Holidays</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="p-3 rounded-3" style="background: rgba(255,255,255,0.03);">
+                            <i class="fas fa-phone fa-3x mb-3" style="color: #00f2fe;"></i>
+                            <h5 class="fw-bold">Contact</h5>
+                            <p class="text-muted mb-0">+603-XXXX-XXXX<br>lostandfound@sksmall.com.my</p>
+                        </div>
+                    </div>
+                </div>
+                <hr class="my-4" style="border-color: rgba(255,255,255,0.05);">
+                <p class="text-muted mb-0">
+                    <i class="fas fa-shield-alt me-2" style="color: #667eea;"></i>
+                    Your items are safe with us. All claims are verified before release.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-check-circle"></i> Check Claim Status</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Info Alert -->
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 
+                        Enter the email address you used when registering to check the status of your claims.
+                    </div>
+                    
+                    <form method="POST" action="/claimant/check-status">
+                        <!-- CSRF Token -->
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                <input type="email" name="email" class="form-control" required 
+                                       placeholder="your@email.com" autocomplete="email">
+                            </div>
+                            <small class="text-muted">Enter the email you used when registering as a claimant</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 py-2">
+                            <i class="fas fa-search"></i> Check Status
+                        </button>
+                    </form>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- Alternative Options -->
+                    <div class="row text-center">
+                        <div class="col-md-6">
+                            <div class="card border-0">
+                                <div class="card-body">
+                                    <i class="fas fa-sign-in-alt fa-2x text-primary mb-2"></i>
+                                    <h6>Already Registered?</h6>
+                                    <a href="/claimant/login" class="btn btn-sm btn-outline-primary">
+                                        Login to Your Account
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-0">
+                                <div class="card-body">
+                                    <i class="fas fa-user-plus fa-2x text-success mb-2"></i>
+                                    <h6>New User?</h6>
+                                    <a href="/claimant/register" class="btn btn-sm btn-outline-success">
+                                        Register as Claimant
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-3">
+                    
+                    <div class="text-center">
+                        <a href="/" class="text-decoration-none">
+                            <i class="fas fa-home"></i> Back to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

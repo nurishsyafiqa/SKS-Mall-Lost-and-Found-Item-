@@ -1,0 +1,394 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <h3 class="mb-0"><i class="fas fa-hand-holding-heart me-2"></i> Claim Your Lost Item</h3>
+                <small class="text-white-50">at SKS Mall</small>
+            </div>
+            <div class="card-body">
+                
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} border-0 alert-dismissible fade show" role="alert">
+                                <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'danger' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <!-- Alert -->
+                <div class="alert alert-info border-0">
+                    <i class="fas fa-info-circle me-2"></i> 
+                    <strong>No login required!</strong> Fill in your details and you'll receive a Claim ID instantly.
+                </div>
+                
+                <!-- QR Code Pre-selected Item Message -->
+                {% if pre_selected_item %}
+                <div class="alert alert-success border-0">
+                    <i class="fas fa-qrcode me-2"></i>
+                    <strong>Item pre-selected from QR code!</strong><br>
+                    <span class="text-muted">You are claiming: </span>
+                    <strong>{{ pre_selected_item.category }}</strong> - 
+                    {{ pre_selected_item.description[:100] }}
+                    {% if pre_selected_item.location_found_lost %}
+                    <br><small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i> Found at: {{ pre_selected_item.location_found_lost }}</small>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <!-- Browser Notification Alert -->
+                <div class="alert alert-warning border-0" id="notificationAlert" style="display: none;">
+                    <i class="fas fa-bell me-2"></i>
+                    <strong>🔔 Get your Claim ID via notification!</strong>
+                    <span id="notificationStatus">We'll send a browser notification with your Claim ID.</span>
+                    <button class="btn btn-sm btn-outline-primary ms-2" onclick="requestNotificationPermission()">
+                        <i class="fas fa-bell"></i> Allow Notifications
+                    </button>
+                </div>
+                
+                <form method="POST" action="/claim-item" id="claimForm" novalidate>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    
+                    <!-- Full Name -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Your Full Name <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            <input type="text" name="claimant_name" id="claimant_name" class="form-control" placeholder="Enter your full name" required>
+                        </div>
+                        <div class="invalid-feedback">Please enter your full name</div>
+                    </div>
+                    
+                    <!-- Email -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Your Email <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                            <input type="email" name="claimant_email" id="claimant_email" class="form-control" placeholder="your@email.com" required>
+                        </div>
+                        <small class="text-muted"><i class="fas fa-info-circle me-1"></i> We'll send your Claim ID to this email</small>
+                    </div>
+                    
+                    <!-- Phone -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Your Phone Number <span class="text-muted">(Optional)</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                            <input type="tel" name="claimant_phone" id="claimant_phone" class="form-control" placeholder="e.g., 012-3456789">
+                        </div>
+                    </div>
+                    
+                    <!-- Select Item -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Select Your Lost Item <span class="text-danger">*</span></label>
+                        <select name="item_id" id="item_id" class="form-select" required>
+                            <option value="">Select your lost item...</option>
+                            {% for item in lost_items %}
+                            <option value="{{ item.id }}" 
+                                    {% if pre_selected_item and pre_selected_item.id == item.id %}selected{% endif %}>
+                                {{ item.category }} - {{ item.description[:60] }} 
+                                <span class="text-muted">(Lost on {{ item.date_reported }})</span>
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i> Only items reported as lost are shown</small>
+                    </div>
+                    
+                    <!-- Additional Details -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Additional Details / Proof of Ownership</label>
+                        <textarea name="verification_details" id="verification_details" class="form-control" rows="4" 
+                                  placeholder="Describe any unique features, serial number, or proof that this item belongs to you..."></textarea>
+                        <small class="text-muted"><i class="fas fa-shield-alt me-1"></i> This helps us verify your ownership</small>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary w-100 py-3" id="submitBtn">
+                        <i class="fas fa-paper-plane me-2"></i> Submit Claim to SKS Mall
+                    </button>
+                </form>
+                
+                <hr class="my-4">
+                
+                <!-- Footer Links -->
+                <div class="text-center">
+                    <p class="mb-2">
+                        <i class="fas fa-search me-1"></i> Already have a Claim ID? 
+                        <a href="/track-claim" class="fw-bold">Track your claim here</a>
+                    </p>
+                    <small class="text-muted">
+                        <i class="fas fa-clock me-1"></i> Claims are reviewed within 2-3 business days
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// =============================================
+// 1. MOBILE-FRIENDLY FORM VALIDATION
+// =============================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('claimForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    // Prevent iOS zoom on focus
+    if ('ontouchstart' in window) {
+        document.querySelectorAll('input, select, textarea').forEach(function(el) {
+            el.style.fontSize = '16px';
+        });
+    }
+    
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        // Reset validation
+        document.querySelectorAll('.is-invalid').forEach(function(el) {
+            el.classList.remove('is-invalid');
+        });
+        
+        let isValid = true;
+        const name = document.getElementById('claimant_name').value.trim();
+        const email = document.getElementById('claimant_email').value.trim();
+        const itemId = document.getElementById('item_id').value;
+        
+        if (!name) {
+            document.getElementById('claimant_name').classList.add('is-invalid');
+            isValid = false;
+            showToast('Please enter your name', 'danger');
+        }
+        
+        if (!email) {
+            document.getElementById('claimant_email').classList.add('is-invalid');
+            isValid = false;
+            showToast('Please enter your email', 'danger');
+        } else if (!email.includes('@') || !email.includes('.')) {
+            document.getElementById('claimant_email').classList.add('is-invalid');
+            isValid = false;
+            showToast('Please enter a valid email address', 'danger');
+        }
+        
+        if (!itemId) {
+            document.getElementById('item_id').classList.add('is-invalid');
+            isValid = false;
+            showToast('Please select an item', 'danger');
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Submitting...';
+        submitBtn.style.opacity = '0.7';
+    });
+});
+
+// =============================================
+// 2. BROWSER NOTIFICATION
+// =============================================
+
+// Check if browser supports notifications
+if ('Notification' in window) {
+    // Show notification alert if not granted
+    if (Notification.permission === 'default') {
+        document.getElementById('notificationAlert').style.display = 'block';
+        document.getElementById('notificationStatus').textContent = 'Enable notifications to get your Claim ID instantly!';
+    } else if (Notification.permission === 'granted') {
+        document.getElementById('notificationAlert').style.display = 'block';
+        document.getElementById('notificationAlert').className = 'alert alert-success border-0';
+        document.getElementById('notificationStatus').textContent = '✅ Notifications are enabled! You\'ll get your Claim ID instantly.';
+    }
+}
+
+function requestNotificationPermission() {
+    if ('Notification' in window) {
+        Notification.requestPermission().then(function(permission) {
+            if (permission === 'granted') {
+                document.getElementById('notificationAlert').className = 'alert alert-success border-0';
+                document.getElementById('notificationStatus').textContent = '✅ Notifications enabled! You\'ll get your Claim ID instantly.';
+                showToast('✅ Notifications enabled!', 'success');
+            } else {
+                showToast('⚠️ Please allow notifications in browser settings', 'warning');
+            }
+        });
+    }
+}
+
+// =============================================
+// 3. TOAST NOTIFICATION (for mobile feedback)
+// =============================================
+
+function showToast(message, type) {
+    // Remove existing toast
+    const existing = document.querySelector('.mobile-toast');
+    if (existing) {
+        existing.remove();
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = 'mobile-toast';
+    
+    let bgColor = 'rgba(0,0,0,0.9)';
+    if (type === 'success') bgColor = 'rgba(40,167,69,0.95)';
+    else if (type === 'danger') bgColor = 'rgba(220,53,69,0.95)';
+    else if (type === 'warning') bgColor = 'rgba(255,193,7,0.95)';
+    else bgColor = 'rgba(23,162,184,0.95)';
+    
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: ${bgColor};
+        color: ${type === 'warning' ? '#000' : 'white'};
+        padding: 15px 25px;
+        border-radius: 12px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 15px;
+        z-index: 9999;
+        max-width: 90%;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        animation: slideUp 0.4s ease-out;
+        pointer-events: none;
+    `;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(function() {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.5s';
+        setTimeout(function() {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 500);
+    }, 3000);
+}
+
+// =============================================
+// 4. STYLES
+// =============================================
+
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateX(-50%) translateY(30px); }
+        to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    
+    /* Mobile-friendly form styles */
+    @media (max-width: 576px) {
+        .form-control, .form-select {
+            font-size: 16px !important;
+            padding: 12px 15px;
+            height: auto;
+        }
+        .btn {
+            font-size: 18px;
+            padding: 15px;
+        }
+        .card-body {
+            padding: 20px !important;
+        }
+        input, select, textarea {
+            font-size: 16px !important;
+        }
+        .input-group-text {
+            padding: 10px 12px;
+        }
+        .alert {
+            font-size: 14px;
+            padding: 12px 15px;
+        }
+        /* Improve touch targets */
+        .form-select {
+            min-height: 50px;
+        }
+        .btn {
+            min-height: 50px;
+        }
+        /* Better spacing for mobile */
+        .mb-3 {
+            margin-bottom: 16px !important;
+        }
+        .form-label {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        /* Fix select on iOS */
+        select.form-select {
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 12px;
+            padding-right: 35px;
+        }
+    }
+    
+    /* Better invalid feedback */
+    .is-invalid {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+    }
+    .invalid-feedback {
+        display: none;
+        font-size: 13px;
+        color: #dc3545;
+        margin-top: 5px;
+    }
+    .is-invalid ~ .invalid-feedback {
+        display: block;
+    }
+    
+    /* Disabled button state */
+    .btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+`;
+document.head.appendChild(style);
+
+// =============================================
+// 5. FIX: Make sure form works on mobile
+// =============================================
+
+// Fix for mobile Safari - ensure form submits
+document.addEventListener('touchstart', function() {
+    // This helps with iOS touch events
+}, {passive: true});
+
+// Ensure select dropdown works on mobile
+document.querySelectorAll('select').forEach(function(select) {
+    select.addEventListener('change', function() {
+        // Remove invalid state when user selects
+        this.classList.remove('is-invalid');
+    });
+});
+
+// Real-time validation feedback
+document.querySelectorAll('input, select').forEach(function(el) {
+    el.addEventListener('input', function() {
+        if (this.value.trim() !== '') {
+            this.classList.remove('is-invalid');
+        }
+    });
+});
+
+// Fix for CSRF token on mobile
+// Make sure the token is included
+console.log('🔒 CSRF Token:', document.querySelector('input[name="csrf_token"]')?.value);
+</script>
+{% endblock %}

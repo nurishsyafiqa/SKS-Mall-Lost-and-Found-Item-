@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-lg border-0">
+            <div class="card-header text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <h4 class="mb-0"><i class="fas fa-id-card me-2"></i> Claim Details</h4>
+                <small>{{ claim.claim_id }}</small>
+            </div>
+            <div class="card-body">
+                <!-- Claim Status Badge -->
+                <div class="text-center mb-4">
+                    <span class="badge bg-warning text-dark px-4 py-2" style="font-size: 1rem;">
+                        <i class="fas fa-clock me-2"></i> Pending Verification
+                    </span>
+                </div>
+
+                <div class="row">
+                    <!-- Claimant Information -->
+                    <div class="col-md-6">
+                        <div class="p-3 mb-3" style="background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+                            <h6 class="text-primary"><i class="fas fa-user me-2"></i> Claimant Information</h6>
+                            <hr style="border-color: rgba(255,255,255,0.08);">
+                            <p class="mb-1"><strong>Name:</strong> {{ claim.claimant_name }}</p>
+                            <p class="mb-1"><strong>Email:</strong> {{ claim.claimant_contact or claim.claimant_email }}</p>
+                            <p class="mb-0"><strong>Phone:</strong> {{ claim.claimant_phone or 'N/A' }}</p>
+                            <p class="mb-0"><strong>Claim Date:</strong> {{ claim.claim_date or claim.created_at }}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Item Information -->
+                    <div class="col-md-6">
+                        <div class="p-3 mb-3" style="background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+                            <h6 class="text-success"><i class="fas fa-box me-2"></i> Item Information</h6>
+                            <hr style="border-color: rgba(255,255,255,0.08);">
+                            <p class="mb-1"><strong>Category:</strong> {{ claim.category }}</p>
+                            <p class="mb-1"><strong>Description:</strong> {{ claim.description }}</p>
+                            <p class="mb-0"><strong>Found at:</strong> {{ claim.location_found_lost or 'N/A' }}</p>
+                            <p class="mb-0"><strong>Claim ID:</strong> <code>{{ claim.claim_id }}</code></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Verification Questions -->
+                <div class="p-3 mb-3" style="background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+                    <h6 class="text-warning"><i class="fas fa-question-circle me-2"></i> Verification Questions</h6>
+                    <hr style="border-color: rgba(255,255,255,0.08);">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Q1:</strong> {{ claim.verification_question1 or 'Not provided' }}</p>
+                            <p class="text-success mb-2"><strong>Expected Answer:</strong> {{ claim.verification_answer1 or 'Not provided' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Q2:</strong> {{ claim.verification_question2 or 'Not provided' }}</p>
+                            <p class="text-success mb-2"><strong>Expected Answer:</strong> {{ claim.verification_answer2 or 'Not provided' }}</p>
+                        </div>
+                    </div>
+                    <p class="mb-0"><strong>Claimant's Notes:</strong> {{ claim.verification_notes or 'No notes provided' }}</p>
+                </div>
+
+                <!-- Claim ID Display -->
+                <div class="text-center p-3 mb-3" style="background: rgba(102, 126, 234, 0.1); border-radius: 12px; border: 2px dashed rgba(102, 126, 234, 0.3);">
+                    <h6><i class="fas fa-id-card me-2"></i> Claim ID</h6>
+                    <h3 style="color: #667eea; letter-spacing: 2px;">{{ claim.claim_id }}</h3>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="text-center mt-4">
+                    <a href="/staff/dashboard" class="btn btn-secondary px-4">
+                        <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+                    </a>
+                    
+                    <form method="POST" action="/staff/verify-claim/{{ claim.id }}" style="display: inline-block; margin-left: 10px;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <input type="hidden" name="claimant_answers" value="Verified by staff">
+                        <input type="hidden" name="id_verified" value="1">
+                        <input type="hidden" name="id_card_number" value="Verified">
+                        <input type="hidden" name="answers_match" value="yes">
+                        
+                        <button type="submit" class="btn btn-success px-4" onclick="return confirm('Approve this claim?')">
+                            <i class="fas fa-check me-2"></i> Approve Claim
+                        </button>
+                    </form>
+                    
+                    <form method="POST" action="/staff/verify-claim/{{ claim.id }}" style="display: inline-block; margin-left: 10px;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <input type="hidden" name="claimant_answers" value="Rejected by staff">
+                        <input type="hidden" name="id_verified" value="0">
+                        <input type="hidden" name="id_card_number" value="">
+                        <input type="hidden" name="answers_match" value="no">
+                        
+                        <button type="submit" class="btn btn-danger px-4" onclick="return confirm('Reject this claim?')">
+                            <i class="fas fa-times me-2"></i> Reject Claim
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

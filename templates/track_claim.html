@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-lg border-0">
+            <div class="card-header text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-bottom: none;">
+                <h3 class="mb-0"><i class="fas fa-search me-2"></i> Track Your Claim</h3>
+                <small class="text-white-50">at SKS Mall</small>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-info border-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Enter your Claim ID to check the status of your claim at SKS Mall.
+                </div>
+                
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Claim ID</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                            <input type="text" name="claim_id" class="form-control" 
+                                   placeholder="e.g., CLM-20250525-0001" required>
+                        </div>
+                        <small class="text-muted"><i class="fas fa-info-circle me-1"></i> Enter the Claim ID you received in your email</small>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold">
+                        <i class="fas fa-search me-2"></i> Track Claim
+                    </button>
+                </form>
+                
+                <hr class="my-4" style="border-color: rgba(255,255,255,0.08);">
+                
+                <div class="text-center">
+                    <p class="mb-2">
+                        <i class="fas fa-hand-holding-heart me-1" style="color: #667eea;"></i>
+                        Don't have a Claim ID?
+                    </p>
+                    <a href="/claim-item" class="btn btn-outline-primary">
+                        <i class="fas fa-plus me-2"></i> Submit a New Claim
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

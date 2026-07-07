@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0"><i class="fas fa-user-plus"></i> Register as Claimant</h3>
+            </div>
+            <div class="card-body">
+                <!-- Security Notice -->
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    <i class="fas fa-shield-alt"></i> <strong>Secure Registration</strong> - Your information is protected.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                
+                <p>Register to claim your lost items. We'll notify you when your claim is approved.</p>
+                
+                <form method="POST" action="/claimant/register">
+                    <!-- CSRF TOKEN ADDED HERE - THIS FIXES THE 403 ERROR -->
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Full Name <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            <input type="text" name="name" class="form-control" required placeholder="Enter your full name">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Email <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                            <input type="email" name="email" class="form-control" required placeholder="your@email.com">
+                        </div>
+                        <small class="text-muted">We'll send notifications to this email</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Phone Number <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                            <input type="tel" name="phone" class="form-control" required placeholder="e.g., 012-3456789">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">IC/Passport Number (for verification)</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                            <input type="text" name="id_card_number" class="form-control" placeholder="Optional but recommended">
+                        </div>
+                        <small class="text-muted">Helps verify your identity when claiming items</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Create Password <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-key"></i></span>
+                            <input type="password" name="password" class="form-control" required id="password" placeholder="Enter password">
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">
+                            Password must be at least 8 characters with uppercase, lowercase, number, and special character
+                        </small>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> <strong>Security Tips:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Use a strong, unique password</li>
+                            <li>Never share your password with anyone</li>
+                            <li>We will never ask for your password via email or phone</li>
+                        </ul>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-paper-plane"></i> Register & Continue
+                    </button>
+                </form>
+                
+                <hr>
+                <p class="text-center">
+                    Already have an account? 
+                    <a href="/claimant/login">Login here</a>
+                </p>
+                
+                <p class="text-center mt-3">
+                    <a href="/" class="text-decoration-none">
+                        <i class="fas fa-arrow-left"></i> Back to Home
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Password Toggle JavaScript -->
+<script>
+    const togglePassword = document.querySelector('#togglePassword');
+    const password = document.querySelector('#password');
+    
+    if (togglePassword) {
+        togglePassword.addEventListener('click', function() {
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+    }
+</script>
+{% endblock %}

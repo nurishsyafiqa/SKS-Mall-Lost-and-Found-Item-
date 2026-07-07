@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0"><i class="fas fa-user-circle"></i> Claimant Login</h3>
+            </div>
+            <div class="card-body">
+                <!-- Security Notice -->
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    <i class="fas fa-shield-alt"></i> <strong>Secure Login</strong> - Your credentials are protected.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                
+                <form method="POST" action="/claimant/login">
+                    <!-- CSRF Token for Security -->
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                            <input type="email" name="email" class="form-control" required 
+                                   placeholder="your@email.com" autocomplete="email">
+                        </div>
+                        <small class="text-muted">Use the email you registered with</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-key"></i></span>
+                            <input type="password" name="password" class="form-control" required 
+                                   placeholder="Enter your password" autocomplete="current-password" id="password">
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">Password is case-sensitive</small>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="remember">
+                        <label class="form-check-label" for="remember">Remember me</label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+                </form>
+                
+                <hr>
+                
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> <strong>Security Tips:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Never share your password with anyone</li>
+                        <li>Use a strong, unique password</li>
+                        <li>Contact staff if you suspect unauthorized access</li>
+                    </ul>
+                </div>
+                
+                <div class="text-center">
+                    <p class="mb-0">
+                        New user? <a href="/claimant/register" class="text-decoration-none">
+                            <i class="fas fa-user-plus"></i> Register here
+                        </a>
+                    </p>
+                    <p class="mt-2">
+                        <a href="/claimant/check-status" class="text-decoration-none">
+                            <i class="fas fa-check-circle"></i> Check claim status without login
+                        </a>
+                    </p>
+                </div>
+                
+                <hr class="my-3">
+                
+                <div class="text-center">
+                    <small class="text-muted">
+                        <i class="fas fa-question-circle"></i> Having trouble? 
+                        <a href="/">Contact support</a>
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Back to Home Link -->
+        <div class="text-center mt-3">
+            <a href="/" class="text-decoration-none">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Password Toggle JavaScript -->
+<script>
+    const togglePassword = document.querySelector('#togglePassword');
+    const password = document.querySelector('#password');
+    
+    if (togglePassword) {
+        togglePassword.addEventListener('click', function() {
+            // Toggle the type attribute
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            
+            // Toggle the icon
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+    }
+</script>
+{% endblock %}

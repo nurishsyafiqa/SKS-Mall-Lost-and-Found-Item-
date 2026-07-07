@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <!-- Show form OR success page based on submission -->
+        {% if submitted and claim_id %}
+        <!-- ========== SUCCESS PAGE WITH QR CODE ========== -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header text-white" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-bottom: none;">
+                <h3 class="mb-0"><i class="fas fa-check-circle me-2"></i> Found Item Recorded!</h3>
+                <small class="text-white-50">SKS Mall Lost & Found</small>
+            </div>
+            <div class="card-body text-center p-4">
+                <div class="alert alert-success border-0">
+                    <i class="fas fa-heart me-2"></i>
+                    <strong>Thank you for your honesty!</strong> Your good deed helps someone recover their precious belongings.
+                </div>
+                
+                <div class="alert alert-info border-0">
+                    <strong>📌 Claim ID:</strong> {{ claim_id }}
+                </div>
+                
+                <!-- QR CODE SECTION -->
+                <div class="border rounded-4 p-4 d-inline-block mb-3" style="background: white;">
+                    <h6><i class="fas fa-qrcode me-2" style="color: #4A148C;"></i> QR Code for Claimant</h6>
+                    <img src="data:image/png;base64,{{ qr_code }}" 
+                         alt="QR Code" 
+                         style="width:200px; height:200px;"
+                         class="mt-2">
+                    <p class="text-muted mt-2 small">
+                        <i class="fas fa-print me-1"></i> Print and attach to the item
+                    </p>
+                </div>
+                
+                <div class="row g-3 mt-3">
+                    <div class="col-md-6">
+                        <button onclick="window.print()" class="btn btn-primary w-100 py-2">
+                            <i class="fas fa-print me-2"></i> Print QR Code
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="/staff/dashboard" class="btn btn-secondary w-100 py-2">
+                            <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+                
+                <hr class="my-4" style="border-color: rgba(255,255,255,0.08);">
+                
+                <div class="text-start">
+                    <h6><i class="fas fa-info-circle me-2" style="color: #4facfe;"></i> Next Steps:</h6>
+                    <ol class="text-muted">
+                        <li>Print the QR code above</li>
+                        <li>Attach it to the found item</li>
+                        <li>Place the item in the Lost & Found storage</li>
+                        <li>Claimants can scan QR code to submit claim</li>
+                    </ol>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <a href="/report-found" class="btn btn-outline-success">
+                        <i class="fas fa-plus me-2"></i> Report Another Item
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        {% else %}
+        <!-- ========== FORM PAGE ========== -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header text-white" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-bottom: none;">
+                <h3 class="mb-0"><i class="fas fa-smile me-2"></i> Report Found Item</h3>
+                <small class="text-white-50">at SKS Mall</small>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-success border-0">
+                    <i class="fas fa-heart me-2"></i> 
+                    <strong>Thank you for your honesty!</strong> Your good deed helps someone recover their precious belongings.
+                </div>
+                
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    
+                    <!-- Category -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Category <span class="text-danger">*</span></label>
+                        <select name="category" class="form-select" required>
+                            <option value="">Select Category</option>
+                            <option>Wallet</option>
+                            <option>Phone</option>
+                            <option>Keys</option>
+                            <option>Bag</option>
+                            <option>Glasses</option>
+                            <option>Watch</option>
+                            <option>Jewelry</option>
+                            <option>Clothing</option>
+                            <option>Laptop</option>
+                            <option>Tablet</option>
+                            <option>ID Card</option>
+                            <option>Passport</option>
+                            <option>Camera</option>
+                            <option>Headphones</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Description <span class="text-danger">*</span></label>
+                        <textarea name="description" class="form-control" rows="4" required 
+                                  placeholder="Describe the found item in detail (color, brand, condition, any unique features)..."></textarea>
+                        <small class="text-muted"><i class="fas fa-info-circle me-1"></i> Max 500 characters. The more details, the easier it is to find the owner!</small>
+                    </div>
+                    
+                    <!-- Color & Brand -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Color</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-palette"></i></span>
+                                    <input type="text" name="color" class="form-control" placeholder="e.g., Black, Red, Blue">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Brand</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-tag"></i></span>
+                                    <input type="text" name="brand" class="form-control" placeholder="e.g., Apple, Samsung, Nike">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Location -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Where was it found? <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                            <input type="text" name="location" class="form-control" required 
+                                   placeholder="e.g., Food Court, Cinema Hall 3, Parking B2">
+                        </div>
+                        <small class="text-muted"><i class="fas fa-info-circle me-1"></i> Be as specific as possible</small>
+                    </div>
+                    
+                    <!-- Storage Location -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Storage Location</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-archive"></i></span>
+                            <input type="text" name="storage_location" class="form-control" 
+                                   placeholder="e.g., Lost & Found Office, Shelf A12">
+                        </div>
+                        <small class="text-muted"><i class="fas fa-info-circle me-1"></i> Where did you place the item?</small>
+                    </div>
+                    
+                    <!-- Reporter Info -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Your Name <span class="text-muted">(Optional)</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <input type="text" name="reporter_name" class="form-control" placeholder="Your name">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Your Contact <span class="text-muted">(Optional)</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                    <input type="tel" name="reporter_contact" class="form-control" placeholder="Phone or email">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4" style="border-color: rgba(255,255,255,0.08);">
+                    
+                    <!-- What Happens Next -->
+                    <div class="alert alert-info border-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>What happens next?</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>The item will be stored safely in our Lost & Found office</li>
+                            <li>Staff will check if someone reported this item as lost</li>
+                            <li>We will contact the owner when identified</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Submit -->
+                    <button type="submit" class="btn btn-success w-100 py-3 fw-bold">
+                        <i class="fas fa-save me-2"></i> Submit Found Report
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="text-center mt-4">
+            <a href="/" class="text-decoration-none" style="color: rgba(255,255,255,0.7);">
+                <i class="fas fa-arrow-left me-1"></i> Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Print Styles -->
+<style>
+@media print {
+    .navbar, .footer, .btn:not(:first-child), .mall-badge, .text-center a {
+        display: none !important;
+    }
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+        break-inside: avoid;
+    }
+    .card-header {
+        background: #4facfe !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    .btn {
+        display: none !important;
+    }
+}
+</style>
+{% endblock %}

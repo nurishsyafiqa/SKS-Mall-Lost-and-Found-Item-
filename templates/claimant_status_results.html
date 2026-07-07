@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0"><i class="fas fa-check-circle"></i> Claim Status 
+                {% if email and email != '' %}
+                    <span class="text-warning">for {{ email }}</span>
+                {% else %}
+                    <span class="text-warning">- Results</span>
+                {% endif %}
+            </h3>
+        </div>
+        <div class="card-body">
+            {% if claims and claims|length > 0 %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> Found {{ claims|length }} claim(s) for your email address.
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th><i class="fas fa-calendar"></i> Claim Date</th>
+                                <th><i class="fas fa-tag"></i> Item Category</th>
+                                <th><i class="fas fa-align-left"></i> Description</th>
+                                <th><i class="fas fa-map-marker-alt"></i> Location</th>
+                                <th><i class="fas fa-info-circle"></i> Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for claim in claims %}
+                            <tr>
+                                <td>
+                                    {% if claim.created_at %}
+                                        {{ claim.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                                <td><strong>{{ claim.category or 'Unknown' }}</strong></td>
+                                <td>
+                                    {{ claim.description[:80] if claim.description else 'No description' }}
+                                    {% if claim.description and claim.description|length > 80 %}...{% endif %}
+                                </td>
+                                <td>{{ claim.location_found_lost or 'Not specified' }}</td>
+                                <td>
+                                    {% if claim.status == 'pending' %}
+                                        <span class="badge bg-warning text-dark px-3 py-2">
+                                            <i class="fas fa-clock"></i> Pending Review
+                                        </span>
+                                    {% elif claim.status == 'approved' %}
+                                        <span class="badge bg-success px-3 py-2">
+                                            <i class="fas fa-check-circle"></i> Approved - Visit Lost & Found
+                                        </span>
+                                    {% elif claim.status == 'rejected' %}
+                                        <span class="badge bg-danger px-3 py-2">
+                                            <i class="fas fa-times-circle"></i> Rejected
+                                        </span>
+                                    {% elif claim.status == 'completed' %}
+                                        <span class="badge bg-info px-3 py-2">
+                                            <i class="fas fa-trophy"></i> Completed
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary px-3 py-2">{{ claim.status }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Helpful information for approved claims -->
+                {% if claims|selectattr("status", "equalto", "approved")|list %}
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>Your claim has been approved!</strong> 
+                    Please visit our Lost & Found office at Level 1, Customer Service Counter.
+                    Bring your IC/Passport for verification.
+                </div>
+                {% endif %}
+                
+            {% else %}
+                <div class="alert alert-info text-center py-5">
+                    <i class="fas fa-inbox fa-4x mb-3 text-muted"></i>
+                    <h4>No claims found</h4>
+                    <p class="mb-3">
+                        {% if email and email != '' %}
+                            No claims found for <strong>{{ email }}</strong>.
+                        {% else %}
+                            Please enter your email address to check your claim status.
+                        {% endif %}
+                    </p>
+                    <div class="mt-3">
+                        <a href="/claimant/check-status" class="btn btn-primary">
+                            <i class="fas fa-arrow-left"></i> Go Back to Check Status
+                        </a>
+                        <a href="/claimant/register" class="btn btn-outline-primary ms-2">
+                            <i class="fas fa-user-plus"></i> Register as Claimant
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <div class="text-center mt-4">
+                <a href="/claimant/check-status" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Check Another Email
+                </a>
+                <a href="/" class="btn btn-primary">
+                    <i class="fas fa-home"></i> Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

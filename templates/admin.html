@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-lg border-0" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="card-body">
+                    <h2><i class="fas fa-crown me-2"></i> Admin Dashboard</h2>
+                    <p class="mb-0 text-white-50">Welcome, {{ session.full_name }}! Manage users, items, and system settings.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
+            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <div class="card-body text-center">
+                    <h5 class="text-white-50"><i class="fas fa-boxes me-2"></i>Total</h5>
+                    <h2 class="fw-bold mb-0">{{ stats.total_items if stats else 0 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="card-body text-center">
+                    <h5 class="text-white-50"><i class="fas fa-frown me-2"></i>Lost</h5>
+                    <h2 class="fw-bold mb-0">{{ stats.lost_items if stats else 0 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <div class="card-body text-center">
+                    <h5 class="text-white-50"><i class="fas fa-smile me-2"></i>Found</h5>
+                    <h2 class="fw-bold mb-0">{{ stats.found_items if stats else 0 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);">
+                <div class="card-body text-center">
+                    <h5 class="text-white-50"><i class="fas fa-check-circle me-2"></i>Claimed</h5>
+                    <h2 class="fw-bold mb-0">{{ stats.claimed_items if stats else 0 }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Manage Users Section - WITH EMAIL FIELD -->
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 h-100">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #1a1a2e, #16213e); border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <h4 class="mb-0"><i class="fas fa-users me-2"></i> Manage Users</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Create User Form -->
+                    <form method="POST" action="/admin/create-user" class="mb-4">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <h5 class="mb-3"><i class="fas fa-user-plus me-2" style="color: #4facfe;"></i> Create New User</h5>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <input type="text" name="username" class="form-control" placeholder="Username" required>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" name="full_name" class="form-control" placeholder="Full Name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="password" name="password" class="form-control" placeholder="Password" required>
+                                <small class="text-muted">Min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special</small>
+                            </div>
+                            <div class="col-md-6">
+                                <select name="role" class="form-select" required>
+                                    <option value="staff">Staff</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                            
+                            <!-- ===== ADD EMAIL FIELD ===== -->
+                            <div class="col-md-12">
+                                <div class="mb-2">
+                                    <label class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
+                                    <input type="email" name="email" class="form-control" 
+                                           placeholder="staff@email.com" required>
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i> 
+                                        Required for security notifications (new device login alerts)
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-primary w-100 py-2">
+                                    <i class="fas fa-user-plus me-2"></i> Create User
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <hr style="border-color: rgba(255,255,255,0.08);">
+                    
+                    <!-- Users Table -->
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-hover">
+                            <thead style="background: rgba(255,255,255,0.03);">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Full Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Active</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td>{{ user.id }}</td>
+                                    <td>{{ user.username }}</td>
+                                    <td>{{ user.full_name or '-' }}</td>
+                                    <td>{{ user.email or '-' }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'danger' if user.role == 'admin' else 'info' }}">
+                                            {{ user.role|upper }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if user.is_active %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if user.role != 'admin' %}
+                                            <a href="/admin/delete-user/{{ user.id }}" 
+                                               class="btn btn-sm btn-danger"
+                                               onclick="return confirm('Delete this user?')">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted">Protected</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Items Section -->
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 h-100">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #1a1a2e, #16213e); border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <h4 class="mb-0"><i class="fas fa-box me-2"></i> Recent Items</h4>
+                </div>
+                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-hover">
+                        <thead style="background: rgba(255,255,255,0.03);">
+                            <tr>
+                                <th>ID</th>
+                                <th>Type</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                            <tr>
+                                <td>{{ item.id }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'danger' if item.type == 'lost' else 'success' }}">
+                                        {{ item.type|upper }}
+                                    </span>
+                                </td>
+                                <td>{{ item.category }}</td>
+                                <td>{{ item.status|title }}</td>
+                                <td>{{ item.date_reported }}</td>
+                                <td>
+                                    <a href="/admin/delete-item/{{ item.id }}" 
+                                       class="btn btn-sm btn-danger"
+                                       onclick="return confirm('Delete this item?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-2">
+        <!-- Pending Matches Section -->
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 h-100">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); border-bottom: none;">
+                    <h4 class="mb-0"><i class="fas fa-handshake me-2"></i> Pending Matches</h4>
+                </div>
+                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                    {% if matches and matches|length > 0 %}
+                        {% for match in matches %}
+                        <div class="alert alert-success mb-2 border-0" style="background: rgba(0, 191, 165, 0.1);">
+                            <strong><i class="fas fa-chart-line me-1"></i> Score: {{ match.match_score }}%</strong><br>
+                            <i class="fas fa-frown me-1"></i> Lost: {{ match.lost_category }}<br>
+                            <i class="fas fa-smile me-1"></i> Found: {{ match.found_category }}<br>
+                            <a href="/staff/confirm-match/{{ match.id }}" 
+                               class="btn btn-sm btn-success mt-2"
+                               onclick="return confirm('Confirm this match?')">
+                                <i class="fas fa-check me-1"></i> Confirm Match
+                            </a>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-check-circle fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No pending matches.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Activity Logs Section -->
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 h-100">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #1a1a2e, #16213e); border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <h4 class="mb-0"><i class="fas fa-history me-2"></i> Recent Activity Logs</h4>
+                </div>
+                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                    {% if logs and logs|length > 0 %}
+                        <table class="table table-hover">
+                            <thead style="background: rgba(255,255,255,0.03);">
+                                <tr>
+                                    <th>Time</th>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in logs %}
+                                <tr>
+                                    <td>{{ log.created_at.strftime('%Y-%m-%d %H:%M') if log.created_at else '-' }}</td>
+                                    <td>{{ log.username or 'System' }}</td>
+                                    <td>{{ log.action }}</td>
+                                    <td>{{ log.details[:50] if log.details else '-' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No activity logs available.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Claims Section -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-bottom: none;">
+                    <h4 class="mb-0"><i class="fas fa-clipboard-list me-2"></i> All Claims</h4>
+                </div>
+                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                    {% if claims and claims|length > 0 %}
+                        <table class="table table-hover">
+                            <thead style="background: rgba(255,255,255,0.03);">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Item</th>
+                                    <th>Category</th>
+                                    <th>Claimant</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for claim in claims %}
+                                <tr>
+                                    <td>{{ claim.id }}</td>
+                                    <td>{{ claim.item_id }}</td>
+                                    <td>{{ claim.category or '-' }}</td>
+                                    <td>{{ claim.claimant_name or '-' }}</td>
+                                    <td>
+                                        {% if claim.status == 'pending' %}
+                                            <span class="badge bg-warning text-dark">⏳ Pending</span>
+                                        {% elif claim.status == 'approved' %}
+                                            <span class="badge bg-success">✅ Approved</span>
+                                        {% elif claim.status == 'rejected' %}
+                                            <span class="badge bg-danger">❌ Rejected</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ claim.status|title }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ claim.created_at.strftime('%Y-%m-%d') if claim.created_at else '-' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No claims submitted yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-header" style="background: linear-gradient(135deg, #1a1a2e, #16213e); border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <h4 class="mb-0"><i class="fas fa-bolt me-2"></i> Quick Actions</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <a href="/staff/items" class="btn btn-primary w-100 py-2">
+                                <i class="fas fa-boxes me-2"></i> All Items
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="/search" class="btn btn-success w-100 py-2">
+                                <i class="fas fa-search me-2"></i> Search
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="/report-lost" class="btn btn-danger w-100 py-2">
+                                <i class="fas fa-frown me-2"></i> Report Lost
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="/report-found" class="btn btn-info w-100 py-2">
+                                <i class="fas fa-smile me-2"></i> Report Found
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

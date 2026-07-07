@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-lg border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body">
+                    <h2><i class="fas fa-tachometer-alt me-2"></i> Staff Dashboard</h2>
+                    <p class="mb-0 text-white-50">Welcome, {{ session.get('full_name', session.get('username', 'Staff')) }}!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Summary Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
+            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <div class="card-body text-center">
+                    <h3 class="fw-bold mb-0">{{ total_pending_items|default(0) }}</h3>
+                    <p class="mb-0 text-white-50">Pending Items</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);">
+                <div class="card-body text-center">
+                    <h3 class="fw-bold mb-0">{{ total_pending_matches|default(0) }}</h3>
+                    <p class="mb-0 text-white-50">Pending Matches</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="card-body text-center">
+                    <h3 class="fw-bold mb-0">{{ total_claims_verify|default(0) }}</h3>
+                    <p class="mb-0 text-white-50">Claims to Verify</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <div class="card-body text-center">
+                    <h3 class="fw-bold mb-0">{{ total_ready_collection|default(0) }}</h3>
+                    <p class="mb-0 text-white-50">Ready for Collection</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- SECTION 1: Pending Items -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-lg border-0 h-100">
+                <div class="card-header" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); border-bottom: none;">
+                    <h5 class="mb-0"><i class="fas fa-box me-2"></i> Pending Items</h5>
+                    <small class="text-white-50">Items with Claim ID from forms</small>
+                </div>
+                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                    {% if pending_items and pending_items|length > 0 %}
+                        {% for item in pending_items %}
+                        <div class="alert alert-info mb-2 border-0" style="background: rgba(79, 172, 254, 0.1);">
+                            <strong><i class="fas fa-id-card me-1"></i> {{ item.claim_id or 'N/A' }}</strong><br>
+                            <span class="badge bg-{{ 'danger' if item.type == 'lost' else 'success' }} mb-1">{{ item.type|upper }}</span>
+                            <strong>{{ item.category }}</strong><br>
+                            <small class="text-muted">{{ item.description[:60] }}</small><br>
+                            <small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i> {{ item.location_found_lost }}</small><br>
+                            <small class="text-muted"><i class="fas fa-calendar me-1"></i> {{ item.date_reported }}</small>
+                            {% if item.phone %}
+                            <hr class="my-1">
+                            <small class="text-success"><i class="fas fa-phone me-1"></i> {{ item.phone }}</small>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-3">No pending items.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 2: Pending Matches -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-lg border-0 h-100">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-bottom: none;">
+                    <h5 class="mb-0"><i class="fas fa-handshake me-2"></i> Pending Matches</h5>
+                    <small class="text-white-50">Confirm ownership</small>
+                </div>
+                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                    {% if pending_matches and pending_matches|length > 0 %}
+                        {% for match in pending_matches %}
+                        <div class="alert alert-success mb-2 border-0" style="background: rgba(0, 191, 165, 0.1);">
+                            <strong><i class="fas fa-chart-line me-1"></i> {{ match.match_score }}%</strong><br>
+                            <i class="fas fa-frown me-1"></i> Lost: {{ match.lost_category }}<br>
+                            <i class="fas fa-smile me-1"></i> Found: {{ match.found_category }}<br>
+                            {% if match.lost_phone %}
+                            <small class="text-primary"><i class="fas fa-phone me-1"></i> {{ match.lost_phone }}</small><br>
+                            {% endif %}
+                            <a href="/staff/confirm-match/{{ match.id }}" class="btn btn-sm btn-success mt-2" 
+                               onclick="return confirm('Confirm this match? This will notify both parties.')">
+                                <i class="fas fa-check me-1"></i> Confirm Match
+                            </a>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-3">No pending matches.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: Claims to Verify -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-lg border-0 h-100">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-bottom: none;">
+                    <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i> Claims to Verify</h5>
+                    <small class="text-white-50">Pending verification</small>
+                </div>
+                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                    {% if pending_claims and pending_claims|length > 0 %}
+                        {% for claim in pending_claims %}
+                        <div class="alert alert-warning mb-3 border-0" style="background: rgba(255, 165, 0, 0.08); border-left: 4px solid #f5576c !important; border-radius: 8px;">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <strong><i class="fas fa-id-card me-1"></i> {{ claim.claim_id or 'N/A' }}</strong>
+                                    <span class="badge bg-warning text-dark ms-2">Pending</span>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <strong>{{ claim.category }}</strong>
+                            </div>
+                            <div class="small text-muted">
+                                <div><i class="fas fa-user me-1"></i> {{ claim.claimant_name }}</div>
+                                <div><i class="fas fa-envelope me-1"></i> {{ claim.claimant_contact or claim.claimant_email }}</div>
+                            </div>
+                            
+                            <div class="d-flex flex-wrap gap-2 mt-3">
+                                <!-- Approve Button -->
+                                <form method="POST" action="/staff/verify-claim/{{ claim.id }}" style="display: inline-block;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <input type="hidden" name="claimant_answers" value="Verified by staff">
+                                    <input type="hidden" name="id_verified" value="1">
+                                    <input type="hidden" name="id_card_number" value="Verified">
+                                    <input type="hidden" name="answers_match" value="yes">
+                                    
+                                    <button type="submit" class="btn btn-success btn-sm px-3 py-2" 
+                                            onclick="return confirm('Approve this claim?')"
+                                            style="border-radius: 20px; font-weight: 600; min-width: 80px;">
+                                        <i class="fas fa-check me-1"></i> Approve
+                                    </button>
+                                </form>
+                                
+                                <!-- Reject Button -->
+                                <form method="POST" action="/staff/verify-claim/{{ claim.id }}" style="display: inline-block;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <input type="hidden" name="claimant_answers" value="Rejected by staff">
+                                    <input type="hidden" name="id_verified" value="0">
+                                    <input type="hidden" name="id_card_number" value="">
+                                    <input type="hidden" name="answers_match" value="no">
+                                    
+                                    <button type="submit" class="btn btn-danger btn-sm px-3 py-2" 
+                                            onclick="return confirm('Reject this claim?')"
+                                            style="border-radius: 20px; font-weight: 600; min-width: 80px;">
+                                        <i class="fas fa-times me-1"></i> Reject
+                                    </button>
+                                </form>
+                                
+                                <!-- View Button -->
+                                <a href="/staff/view-claim/{{ claim.id }}" 
+                                   class="btn btn-info btn-sm px-3 py-2" 
+                                   style="border-radius: 20px; font-weight: 600; min-width: 80px; color: white; text-decoration: none;"
+                                   target="_blank">
+                                    <i class="fas fa-eye me-1"></i> View
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <h5 class="text-muted">No claims to verify</h5>
+                            <p class="text-muted small">All claims have been processed</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SECTION 4: Ready for Collection - UPDATED ===== -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-lg border-0 h-100">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-bottom: none;">
+                    <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i> Ready for Collection</h5>
+                    <small class="text-white-50">Ready for pickup</small>
+                </div>
+                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                    {% if ready_collection and ready_collection|length > 0 %}
+                        {% for item in ready_collection %}
+                        <div class="alert alert-success mb-2 border-0" style="background: rgba(0, 191, 165, 0.1); border-left: 4px solid #28a745 !important;">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <strong><i class="fas fa-id-card me-1"></i> {{ item.claim_id or 'N/A' }}</strong>
+                                {% if item.source == 'item' %}
+                                    <span class="badge bg-secondary">Matched</span>
+                                {% else %}
+                                    <span class="badge bg-info">Claimed</span>
+                                {% endif %}
+                            </div>
+                            <strong>{{ item.category }}</strong><br>
+                            <i class="fas fa-user me-1"></i> {{ item.claimant_name }}<br>
+                            <i class="fas fa-envelope me-1"></i> {{ item.claimant_contact }}<br>
+                            <span class="badge bg-success mt-1 px-3 py-2">
+                                <i class="fas fa-check-circle me-1"></i> Ready for Collection
+                            </span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No items ready</h5>
+                            <p class="text-muted small">Items appear here when matched or approved</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-header" style="background: linear-gradient(135deg, #1a1a2e, #16213e); border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <a href="/report-found" class="btn btn-success w-100 py-2">
+                                <i class="fas fa-plus-circle me-2"></i> Report Found
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="/staff/items" class="btn btn-primary w-100 py-2">
+                                <i class="fas fa-list me-2"></i> All Items
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="/search" class="btn btn-info w-100 py-2">
+                                <i class="fas fa-search me-2"></i> Search
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="/staff/qr-posters" class="btn btn-warning w-100 py-2">
+                                <i class="fas fa-qrcode me-2"></i> QR Posters
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ Staff dashboard loaded');
+});
+</script>
+
+<style>
+    .btn-sm {
+        transition: all 0.3s ease;
+    }
+    .btn-sm:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .btn-success:hover {
+        background: #2d8a4e !important;
+    }
+    .btn-danger:hover {
+        background: #c0392b !important;
+    }
+    .btn-info:hover {
+        background: #0d8a9e !important;
+    }
+    .gap-2 {
+        gap: 8px !important;
+    }
+    .alert {
+        transition: all 0.3s ease;
+    }
+    .alert:hover {
+        transform: translateX(3px);
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-lg border-0">
+            <div class="card-header text-white border-bottom-none 
+                {% if claim.status == 'Ready for Collection ✅' or claim.status == 'Ready for Collection' or claim.status == 'approved' %}bg-success-gradient
+                {% elif claim.status == 'Rejected ❌' or claim.status == 'rejected' %}bg-danger-gradient
+                {% elif claim.status == 'Completed ✅' or claim.status == 'completed' %}bg-warning-gradient
+                {% else %}bg-primary-gradient{% endif %}">
+                <h3 class="mb-0"><i class="fas fa-id-card me-2"></i> Claim Status: {{ claim.claim_id }}</h3>
+                <small class="text-white-50">SKS Mall Lost & Found System</small>
+            </div>
+            <div class="card-body p-4">
+                <!-- Status Badge -->
+                <div class="alert border-0 text-center 
+                    {% if claim.status == 'Pending Review ⏳' or claim.status == 'pending' or claim.status == 'open' %}alert-pending
+                    {% elif claim.status == 'Ready for Collection ✅' or claim.status == 'Ready for Collection' or claim.status == 'approved' %}alert-approved
+                    {% elif claim.status == 'Rejected ❌' or claim.status == 'rejected' %}alert-rejected
+                    {% elif claim.status == 'Claimed ✅' or claim.status == 'claimed' or claim.status == 'completed' %}alert-completed
+                    {% else %}alert-info{% endif %}">
+                    <strong>Status:</strong>
+                    {% if claim.status == 'Pending Review ⏳' or claim.status == 'pending' or claim.status == 'open' %}
+                        <span class="badge bg-warning text-dark px-3 py-2 fs-6">⏳ Pending Review</span>
+                    {% elif claim.status == 'Ready for Collection ✅' or claim.status == 'Ready for Collection' or claim.status == 'approved' %}
+                        <span class="badge bg-success px-3 py-2 fs-6">✅ Ready for Collection</span>
+                    {% elif claim.status == 'Rejected ❌' or claim.status == 'rejected' %}
+                        <span class="badge bg-danger px-3 py-2 fs-6">❌ Rejected</span>
+                    {% elif claim.status == 'Claimed ✅' or claim.status == 'claimed' or claim.status == 'completed' %}
+                        <span class="badge bg-info px-3 py-2 fs-6">🎉 Claimed - Item Collected</span>
+                    {% else %}
+                        <span class="badge bg-secondary px-3 py-2 fs-6">{{ claim.status }}</span>
+                    {% endif %}
+                </div>
+                
+                <!-- Claim Details -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3 bg-light-subtle border border-light">
+                            <small class="text-muted"><i class="fas fa-tag me-1"></i> Item Category</small>
+                            <h5 class="mb-0">{{ claim.category }}</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3 bg-light-subtle border border-light">
+                            <small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i> Location</small>
+                            <h5 class="mb-0">{{ claim.location_found_lost }}</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="p-3 rounded-3 bg-light-subtle border border-light">
+                            <small class="text-muted"><i class="fas fa-align-left me-1"></i> Description</small>
+                            <p class="mb-0">{{ claim.description }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3 bg-light-subtle border border-light">
+                            <small class="text-muted"><i class="fas fa-calendar me-1"></i> Report Date</small>
+                            <h5 class="mb-0">
+                                {% if claim.created_at %}
+                                    {% if claim.created_at is string %}
+                                        {{ claim.created_at[:10] }}
+                                    {% else %}
+                                        {{ claim.created_at.strftime('%Y-%m-%d') if claim.created_at else 'N/A' }}
+                                    {% endif %}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </h5>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3 bg-light-subtle border border-light">
+                            <small class="text-muted"><i class="fas fa-id-card me-1"></i> Claim ID</small>
+                            <h5 class="mb-0 text-primary">{{ claim.claim_id }}</h5>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Status Specific Messages -->
+                {% if claim.status == 'Ready for Collection ✅' or claim.status == 'Ready for Collection' or claim.status == 'approved' %}
+                <div class="alert alert-success border-0">
+                    <h5><i class="fas fa-check-circle me-2"></i> Ready for Collection!</h5>
+                    <p>Your item is ready for collection at SKS Mall:</p>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="p-2 rounded bg-light-subtle">
+                                <small class="text-muted">What to bring</small>
+                                <ul class="mb-0">
+                                    <li><strong>Claim ID:</strong> {{ claim.claim_id }}</li>
+                                    <li><strong>IC/Passport</strong> for verification</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-2 rounded bg-light-subtle">
+                                <small class="text-muted">Location & Hours</small>
+                                <ul class="mb-0">
+                                    <li>Level 1, Customer Service Counter</li>
+                                    <li>10:00 AM - 10:00 PM Daily</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% elif claim.status == 'Rejected ❌' or claim.status == 'rejected' %}
+                <div class="alert alert-danger border-0">
+                    <h5><i class="fas fa-times-circle me-2"></i> Claim Rejected</h5>
+                    <p class="mb-0">Your claim has been rejected. Please contact SKS Mall Lost & Found office for more information.</p>
+                </div>
+                {% elif claim.status == 'Pending Review ⏳' or claim.status == 'pending' or claim.status == 'open' %}
+                <div class="alert alert-warning border-0">
+                    <h5><i class="fas fa-clock me-2"></i> Pending Review</h5>
+                    <p class="mb-0">Your claim is currently being reviewed by SKS Mall staff. You will be notified once a decision is made.</p>
+                </div>
+                {% elif claim.status == 'Claimed ✅' or claim.status == 'claimed' or claim.status == 'completed' %}
+                <div class="alert alert-info border-0">
+                    <h5><i class="fas fa-trophy me-2"></i> Item Collected!</h5>
+                    <p class="mb-0">You have successfully collected your item from SKS Mall Lost & Found office.</p>
+                </div>
+                {% endif %}
+
+                <!-- Show Claimant Info if available (for CLM IDs) -->
+                {% if claim.claimant_name and claim.claimant_name != 'Not specified' %}
+                <div class="row g-3 mt-2">
+                    <div class="col-md-12">
+                        <div class="p-3 rounded-3 bg-light-subtle border border-light">
+                            <small class="text-muted"><i class="fas fa-user me-1"></i> Claimant Information</small>
+                            <p class="mb-0"><strong>Name:</strong> {{ claim.claimant_name }}</p>
+                            <p class="mb-0"><strong>Email:</strong> {{ claim.claimant_contact or 'N/A' }}</p>
+                            <p class="mb-0"><strong>Phone:</strong> {{ claim.claimant_phone or 'N/A' }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Note for Lost/Found items (no claimant) -->
+                {% if claim.is_item and claim.claimant_name == 'Not specified' %}
+                <div class="alert alert-info border-0 mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Note:</strong> This is a lost/found item report. To claim this item, please visit SKS Mall Customer Service Counter with your Claim ID.
+                </div>
+                {% endif %}
+                
+                <!-- Actions -->
+                <hr class="my-4" style="border-color: rgba(255,255,255,0.08);">
+                <div class="text-center">
+                    <div class="row g-2 justify-content-center">
+                        <div class="col-md-5">
+                            <a href="/track-claim" class="btn btn-secondary w-100 py-2">
+                                <i class="fas fa-search me-2"></i> Track Another Claim
+                            </a>
+                        </div>
+                        <div class="col-md-5">
+                            <a href="/" class="btn btn-primary w-100 py-2">
+                                <i class="fas fa-home me-2"></i> Back to Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Gradient backgrounds for card headers */
+.bg-primary-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+.bg-success-gradient {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+.bg-danger-gradient {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+.bg-warning-gradient {
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+}
+
+/* Alert backgrounds */
+.alert-pending {
+    background: rgba(255, 165, 0, 0.1);
+}
+.alert-approved {
+    background: rgba(0, 191, 165, 0.1);
+}
+.alert-rejected {
+    background: rgba(245, 87, 108, 0.1);
+}
+.alert-completed {
+    background: rgba(79, 172, 254, 0.1);
+}
+.alert-info {
+    background: rgba(79, 172, 254, 0.1);
+}
+
+.border-none {
+    border: none;
+}
+
+.border-light {
+    border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.bg-light-subtle {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* Remove border radius from card header */
+.border-bottom-none {
+    border-bottom: none;
+}
+</style>
+{% endblock %}

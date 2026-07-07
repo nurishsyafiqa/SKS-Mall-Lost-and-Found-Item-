@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-lg border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body">
+                    <h2><i class="fas fa-boxes me-2"></i> Manage All Items</h2>
+                    <p class="mb-0 text-white-50">View and manage all lost and found items in the system</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
+            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <div class="card-body text-center">
+                    <h3 class="fw-bold mb-0">{{ items|length }}</h3>
+                    <p class="mb-0 text-white-50">Total Items</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="card-body text-center">
+                    <h3 class="fw-bold mb-0">{{ items|selectattr('type', 'equalto', 'lost')|list|length }}</h3>
+                    <p class="mb-0 text-white-50">Lost Items</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <div class="card-body text-center">
+                    <h3 class="fw-bold mb-0">{{ items|selectattr('type', 'equalto', 'found')|list|length }}</h3>
+                    <p class="mb-0 text-white-50">Found Items</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);">
+                <div class="card-body text-center">
+                    <h3 class="fw-bold mb-0">{{ items|selectattr('status', 'equalto', 'claimed')|list|length }}</h3>
+                    <p class="mb-0 text-white-50">Claimed Items</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="card shadow-lg border-0 mb-4">
+        <div class="card-body">
+            <div class="row g-2">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" id="searchInput" class="form-control" placeholder="Search items..." onkeyup="filterTable()">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select id="typeFilter" class="form-select" onchange="filterTable()">
+                        <option value="">All Types</option>
+                        <option value="lost">Lost Items</option>
+                        <option value="found">Found Items</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select id="statusFilter" class="form-select" onchange="filterTable()">
+                        <option value="">All Status</option>
+                        <option value="open">Open</option>
+                        <option value="pending">Pending</option>
+                        <option value="claimed">Claimed</option>
+                        <option value="matched">Matched</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Items Table -->
+    <div class="card shadow-lg border-0">
+        <div class="card-header" style="background: linear-gradient(135deg, #1a1a2e, #16213e); border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i> All Items</h5>
+            <small class="text-white-50">Click on any row for details</small>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="itemsTable">
+                    <thead style="background: rgba(255,255,255,0.03);">
+                        <tr>
+                            <th><i class="fas fa-hashtag me-1"></i> ID</th>
+                            <th><i class="fas fa-tag me-1"></i> Type</th>
+                            <th><i class="fas fa-box me-1"></i> Category</th>
+                            <th><i class="fas fa-align-left me-1"></i> Description</th>
+                            <th><i class="fas fa-map-marker-alt me-1"></i> Location</th>
+                            <th><i class="fas fa-calendar me-1"></i> Date</th>
+                            <th><i class="fas fa-info-circle me-1"></i> Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr class="item-row" data-type="{{ item.type }}" data-status="{{ item.status }}">
+                            <td><strong>{{ item.id }}</strong></td>
+                            <td>
+                                <span class="badge bg-{{ 'danger' if item.type == 'lost' else 'success' }} px-3 py-2">
+                                    <i class="fas fa-{{ 'frown' if item.type == 'lost' else 'smile' }} me-1"></i>
+                                    {{ item.type|upper }}
+                                </span>
+                            </td>
+                            <td><strong>{{ item.category }}</strong></td>
+                            <td>{{ item.description[:60] }}{% if item.description|length > 60 %}...{% endif %}</td>
+                            <td><i class="fas fa-map-marker-alt text-muted me-1"></i> {{ item.location_found_lost }}</td>
+                            <td>{{ item.date_reported }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'secondary' if item.status == 'open' else 'warning' if item.status == 'pending' else 'success' if item.status == 'claimed' else 'info' }}">
+                                    <i class="fas fa-{{ 'clock' if item.status == 'open' else 'check' if item.status == 'claimed' else 'info-circle' }} me-1"></i>
+                                    {{ item.status|title }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination / Count -->
+    <div class="row mt-4 align-items-center">
+        <div class="col-md-6">
+            <p class="text-muted mb-0">
+                <i class="fas fa-info-circle me-1"></i> 
+                Showing <span id="visibleCount">{{ items|length }}</span> items
+            </p>
+        </div>
+        <div class="col-md-6 text-md-end">
+            <a href="/staff/dashboard" class="btn btn-primary">
+                <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+function filterTable() {
+    const searchInput = document.getElementById('searchInput').value.toLowerCase();
+    const typeFilter = document.getElementById('typeFilter').value;
+    const statusFilter = document.getElementById('statusFilter').value;
+    const rows = document.querySelectorAll('.item-row');
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const type = row.dataset.type;
+        const status = row.dataset.status;
+        
+        let show = true;
+        
+        // Search filter
+        if (searchInput && !text.includes(searchInput)) {
+            show = false;
+        }
+        
+        // Type filter
+        if (typeFilter && type !== typeFilter) {
+            show = false;
+        }
+        
+        // Status filter
+        if (statusFilter && status !== statusFilter) {
+            show = false;
+        }
+        
+        if (show) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    document.getElementById('visibleCount').textContent = visibleCount;
+}
+
+// Add row click handler for future use
+document.querySelectorAll('.item-row').forEach(row => {
+    row.style.cursor = 'pointer';
+    row.addEventListener('click', function() {
+        // You can add functionality here, e.g., view item details
+        console.log('Item clicked:', this);
+    });
+});
+</script>
+{% endblock %}

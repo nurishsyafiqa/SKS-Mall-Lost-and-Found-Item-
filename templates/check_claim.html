@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-lg border-0">
+            <div class="card-header text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-bottom: none;">
+                <h4 class="mb-0"><i class="fas fa-check-circle me-2"></i> Check Your Claim Status</h4>
+                <small class="text-white-50">SKS Mall Lost & Found System</small>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-info border-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Enter your email or phone number to check your claim status.
+                </div>
+                
+                <form method="POST" action="/claim-status">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Email or Phone Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                            <input type="text" name="contact" class="form-control" required 
+                                   placeholder="Enter your email or phone number">
+                        </div>
+                        <small class="text-muted"><i class="fas fa-info-circle me-1"></i> Use the email or phone you provided when submitting your claim</small>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold">
+                        <i class="fas fa-search me-2"></i> Check Status
+                    </button>
+                </form>
+                
+                <hr class="my-4" style="border-color: rgba(255,255,255,0.08);">
+                
+                <div class="text-center">
+                    <p class="text-muted small mb-0">
+                        <i class="fas fa-phone me-2" style="color: #667eea;"></i>
+                        For questions about your claim, contact Lost & Found office at 
+                        <strong style="color: #667eea;">+60X-XXX-XXXX</strong>
+                    </p>
+                    <p class="text-muted small mt-2">
+                        <i class="fas fa-clock me-2" style="color: #4facfe;"></i>
+                        Operating Hours: 10:00 AM - 10:00 PM Daily
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="/" class="text-decoration-none" style="color: rgba(255,255,255,0.7);">
+                <i class="fas fa-arrow-left me-1"></i> Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

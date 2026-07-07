@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow-lg border-0">
+            <div class="card-header text-center py-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-bottom: none;">
+                <i class="fas fa-lock fa-3x mb-3" style="color: rgba(255,255,255,0.9);"></i>
+                <h3 class="mb-0 fw-bold text-white">SKS Mall Staff Login</h3>
+                <small class="text-white-50">Lost & Found System</small>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-info border-0">
+                    <i class="fas fa-shield-alt me-2"></i> 
+                    <strong>Secure login</strong> for SKS Mall staff only
+                </div>
+                
+                <!-- Debug Alert - Shows if users exist in database -->
+                <div class="alert alert-secondary border-0 small" id="debugAlert" style="display: none;">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Debug Info:</strong> Check terminal for login attempts
+                </div>
+                
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Staff Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            <input type="text" name="username" class="form-control" required placeholder="Enter your staff username" id="usernameInput">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-key"></i></span>
+                            <input type="password" name="password" class="form-control" required id="password" placeholder="Enter your password">
+                            <button class="btn btn-outline-light" type="button" id="togglePassword" style="border: 1px solid rgba(255,255,255,0.12);">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                        <label class="form-check-label" for="remember">Remember me</label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold" id="loginBtn">
+                        <i class="fas fa-sign-in-alt me-2"></i> Login to SKS Mall System
+                    </button>
+                </form>
+                
+                <hr class="my-4" style="border-color: rgba(255,255,255,0.08);">
+                
+                <div class="alert alert-warning border-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>SKS Mall Demo Credentials:</strong>
+                    <div class="mt-2">
+                        <span class="badge bg-primary me-1">Admin</span> admin / admin123
+                    </div>
+                    <div>
+                        <span class="badge bg-info me-1">Staff</span> staff_john / staff123
+                    </div>
+                    <div>
+                        <span class="badge bg-secondary me-1">Staff</span> staff_mary / staff123
+                    </div>
+                </div>
+                
+                <!-- Help Section -->
+                <div class="alert alert-light border-0 text-dark small">
+                    <i class="fas fa-question-circle me-2"></i>
+                    <strong>Trouble logging in?</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Make sure Caps Lock is OFF</li>
+                        <li>Try: <strong>admin</strong> / <strong>admin123</strong></li>
+                        <li>Contact system administrator if issues persist</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="/" class="text-decoration-none" style="color: rgba(255,255,255,0.7);">
+                <i class="fas fa-arrow-left me-1"></i> Back to SKS Mall Home
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Password toggle
+    const togglePassword = document.querySelector('#togglePassword');
+    const password = document.querySelector('#password');
+    
+    if (togglePassword) {
+        togglePassword.addEventListener('click', function() {
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+    }
+    
+    // Log login attempt for debugging
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const username = document.getElementById('usernameInput').value;
+        console.log('🔍 Login attempt for username: ' + username);
+    });
+</script>
+{% endblock %}

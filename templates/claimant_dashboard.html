@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h2>👤 Welcome, {{ claimant.name }}!</h2>
+                    <p>Manage your lost item claims here.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Submit New Claim -->
+        <div class="col-md-5">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">📝 Submit New Claim</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="/claimant/submit-claim">
+                        <!-- CSRF Token for Security -->
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Select Lost Item</label>
+                            <select name="item_id" class="form-control" required>
+                                <option value="">Choose your lost item...</option>
+                                {% for item in lost_items %}
+                                <option value="{{ item.id }}">
+                                    {{ item.category }} - {{ item.description[:50] }} ({{ item.date_reported }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Additional Details</label>
+                            <textarea name="verification_details" class="form-control" rows="3" 
+                                      placeholder="Provide proof of ownership (e.g., serial number, unique marks, photos)"></textarea>
+                            <small class="text-muted">Max 500 characters</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-paper-plane"></i> Submit Claim
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- My Claims -->
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">📋 My Claims</h4>
+                </div>
+                <div class="card-body">
+                    {% if claims %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Item</th>
+                                        <th>Status</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for claim in claims %}
+                                    <tr>
+                                        <td>
+                                            {{ claim.created_at.strftime('%Y-%m-%d') if claim.created_at else 'N/A' }}
+                                        </td>
+                                        <td>
+                                            <strong>{{ claim.category }}</strong><br>
+                                            <small class="text-muted">{{ claim.description[:50] if claim.description else '' }}</small>
+                                        </td>
+                                        <td>
+                                            {% if claim.status == 'pending' %}
+                                                <span class="badge bg-warning text-dark">⏳ Pending</span>
+                                            {% elif claim.status == 'approved' %}
+                                                <span class="badge bg-success">✅ Approved</span>
+                                            {% elif claim.status == 'rejected' %}
+                                                <span class="badge bg-danger">❌ Rejected</span>
+                                            {% elif claim.status == 'completed' %}
+                                                <span class="badge bg-info">🎉 Completed</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ claim.status }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if claim.verification_notes %}
+                                                <small>{{ claim.verification_notes[:50] }}</small>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">You haven't submitted any claims yet.</p>
+                            <small class="text-muted">Select a lost item above to submit your first claim.</small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h4 class="mb-0">ℹ️ How to Claim Your Item</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>📋 Claim Process</h5>
+                            <ol>
+                                <li>Submit a claim for the item you lost</li>
+                                <li>Staff will review your claim and verify ownership</li>
+                                <li>If approved, visit the Lost & Found office with your IC/passport</li>
+                                <li>Show the approval notification to collect your item</li>
+                            </ol>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>📍 Lost & Found Office</h5>
+                            <p class="mb-1"><strong>Location:</strong> Mall Customer Service, Level 1</p>
+                            <p class="mb-1"><strong>Operating Hours:</strong> 10:00 AM - 10:00 PM Daily</p>
+                            <p class="mb-1"><strong>Contact:</strong> +60X-XXX-XXXX</p>
+                            <p class="mb-0"><strong>Email:</strong> lostandfound@mall.com</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-shield-alt"></i> <strong>Security Notice:</strong> Please bring your IC/Passport for verification. Do not share your password with anyone.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

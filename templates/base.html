@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SKS Mall - Lost & Found System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            color: #ffffff;
+        }
+        
+        /* Modern Navbar */
+        .navbar {
+            background: rgba(255, 255, 255, 0.08) !important;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0.8rem 0;
+        }
+        
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.4rem;
+            color: #ffffff !important;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .navbar-brand small {
+            font-size: 0.65rem;
+            display: block;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8) !important;
+            font-weight: 500;
+            margin: 0 0.1rem;
+            border-radius: 30px;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff !important;
+            transform: translateY(-2px);
+        }
+        
+        .nav-link i {
+            margin-right: 6px;
+        }
+        
+        /* Glass Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            color: #ffffff;
+            transition: all 0.4s ease;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .card-header {
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 1.2rem 1.5rem;
+            font-weight: 600;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        /* Glass Buttons */
+        .btn {
+            border-radius: 40px;
+            padding: 0.65rem 1.8rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            letter-spacing: 0.3px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(245, 87, 108, 0.4);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(79, 172, 254, 0.4);
+            color: white;
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            color: #1a1a2e;
+            box-shadow: 0 4px 15px rgba(253, 160, 133, 0.3);
+        }
+        
+        .btn-warning:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(253, 160, 133, 0.4);
+            color: #1a1a2e;
+        }
+        
+        .btn-info {
+            background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+            color: #1a1a2e;
+            box-shadow: 0 4px 15px rgba(161, 140, 209, 0.3);
+        }
+        
+        .btn-info:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(161, 140, 209, 0.4);
+            color: #1a1a2e;
+        }
+        
+        .btn-outline-primary {
+            background: transparent;
+            border: 2px solid rgba(102, 126, 234, 0.5);
+            color: white;
+        }
+        
+        .btn-outline-primary:hover {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline-secondary {
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        .btn-outline-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.4);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+            backdrop-filter: blur(10px);
+            border-radius: 32px;
+            padding: 3.5rem 2rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.05) 0%, transparent 70%);
+        }
+        
+        .hero h1, .hero p {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Stat Cards */
+        .stat-card {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 500;
+            margin-top: 0.3rem;
+        }
+        
+        /* Glass Tables */
+        .table {
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .table thead th {
+            background: rgba(255, 255, 255, 0.06);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+            padding: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .table tbody td {
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.85);
+        }
+        
+        .table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.04);
+        }
+        
+        /* ================================================ */
+        /* ========== FIX FOR SELECT DROPDOWN ========== */
+        /* ================================================ */
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            border-radius: 16px;
+            padding: 0.7rem 1.2rem;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background: rgba(255, 255, 255, 0.14);
+            border-color: rgba(102, 126, 234, 0.6);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            color: #ffffff;
+        }
+        
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+        
+        /* ========== CRITICAL FIX: DROPDOWN OPTIONS ========== */
+        .form-select option {
+            background-color: #1a1a2e !important;
+            color: #ffffff !important;
+            padding: 8px 12px;
+        }
+        
+        .form-select option:hover,
+        .form-select option:focus,
+        .form-select option:checked {
+            background-color: #667eea !important;
+            color: #ffffff !important;
+        }
+        
+        /* For select dropdown when expanded */
+        .form-select optgroup {
+            background-color: #1a1a2e;
+            color: #ffffff;
+        }
+        
+        /* Fix for dark mode browsers */
+        .form-select:-moz-focusring {
+            color: transparent;
+            text-shadow: 0 0 0 #ffffff;
+        }
+        /* ========== END DROPDOWN FIX ========== */
+        
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+        }
+        
+        .form-text {
+            color: rgba(255, 255, 255, 0.5) !important;
+            font-size: 0.8rem;
+        }
+        
+        /* Glass Alerts */
+        .alert {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            color: #ffffff;
+            padding: 1rem 1.5rem;
+        }
+        
+        .alert-success {
+            background: rgba(0, 191, 165, 0.15);
+            border-color: rgba(0, 191, 165, 0.2);
+        }
+        
+        .alert-danger {
+            background: rgba(245, 87, 108, 0.15);
+            border-color: rgba(245, 87, 108, 0.2);
+        }
+        
+        .alert-warning {
+            background: rgba(255, 165, 0, 0.15);
+            border-color: rgba(255, 165, 0, 0.2);
+        }
+        
+        .alert-info {
+            background: rgba(79, 172, 254, 0.15);
+            border-color: rgba(79, 172, 254, 0.2);
+        }
+        
+        /* Badges */
+        .badge {
+            padding: 0.4rem 0.9rem;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 0.75rem;
+        }
+        
+        /* Footer */
+        .footer {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Main Content */
+        .main-content {
+            background: transparent;
+        }
+        
+        /* Text Colors */
+        .text-muted {
+            color: rgba(255, 255, 255, 0.6) !important;
+        }
+        
+        .text-white-50 {
+            color: rgba(255, 255, 255, 0.5) !important;
+        }
+        
+        /* Links */
+        a:not(.btn) {
+            color: rgba(102, 126, 234, 0.9);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        a:not(.btn):hover {
+            color: #667eea;
+        }
+        
+        /* Input Group Text */
+        .input-group-text {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: rgba(255, 255, 255, 0.7);
+            border-radius: 16px 0 0 16px;
+        }
+        
+        .input-group .form-control {
+            border-radius: 0 16px 16px 0;
+        }
+        
+        /* Mall Badge */
+        .mall-badge {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.7);
+            z-index: 999;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .mall-badge i {
+            margin-right: 6px;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Modal */
+        .modal-content {
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            color: #ffffff;
+        }
+        
+        .modal-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .modal-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero {
+                padding: 2rem 1rem;
+            }
+            
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+            
+            .stat-number {
+                font-size: 1.8rem;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-search me-2"></i> SKS Mall
+                <small>Lost & Found System</small>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/"><i class="fas fa-home"></i> Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/report-lost"><i class="fas fa-frown"></i> Lost</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/report-found"><i class="fas fa-smile"></i> Found</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/search"><i class="fas fa-search"></i> Search</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/claim-item"><i class="fas fa-hand-holding-heart"></i> Claim</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/track-claim"><i class="fas fa-map-marker-alt"></i> Track</a></li>
+                    {% if session.user_id and session.role in ['admin', 'staff'] %}
+                        <li class="nav-item"><a class="nav-link" href="/staff/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                        {% if session.role == 'admin' %}
+                        <li class="nav-item"><a class="nav-link" href="/admin"><i class="fas fa-crown"></i> Admin</a></li>
+                        {% endif %}
+                        <li class="nav-item"><a class="nav-link" href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="/login"><i class="fas fa-lock"></i> Staff Login</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div style="margin-top: 20px;"></div>
+
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-{{ 'check-circle' if category == 'success' else 'info-circle' if category == 'info' else 'exclamation-triangle' }} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="container main-content py-4">
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer class="footer text-white-50 text-center py-4 mt-5">
+        <div class="container">
+            <p class="mb-0">&copy; 2024 SKS Mall - Lost & Found System</p>
+            <small class="text-white-50">Level 1, Customer Service Counter | Helping Reunite People with Their Belongings</small>
+        </div>
+    </footer>
+
+    <div class="mall-badge">
+        <i class="fas fa-store"></i> SKS Mall
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-lg border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body">
+                    <h2><i class="fas fa-qrcode me-2"></i> SKS Mall QR Code Posters</h2>
+                    <p class="mb-0 text-white-50">Print these QR codes and place them around SKS Mall</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Lost Item QR -->
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 h-100">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <h4 class="mb-0"><i class="fas fa-frown me-2"></i> Report Lost Item</h4>
+                </div>
+                <div class="card-body text-center">
+                    <div class="border rounded-4 p-4 d-inline-block mb-3" style="background: white;">
+                        <img src="data:image/png;base64,{{ lost_qr }}" 
+                             alt="Report Lost QR" 
+                             style="width:200px; height:200px;">
+                    </div>
+                    <h6>Scan to Report Lost Item</h6>
+                    <p class="text-muted small">Place this QR at entrances, food court, and information counters</p>
+                    <button onclick="window.print()" class="btn btn-danger">
+                        <i class="fas fa-print me-2"></i> Print
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Found Item QR -->
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 h-100">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <h4 class="mb-0"><i class="fas fa-smile me-2"></i> Report Found Item</h4>
+                </div>
+                <div class="card-body text-center">
+                    <div class="border rounded-4 p-4 d-inline-block mb-3" style="background: white;">
+                        <img src="data:image/png;base64,{{ found_qr }}" 
+                             alt="Report Found QR" 
+                             style="width:200px; height:200px;">
+                    </div>
+                    <h6>Scan to Report Found Item</h6>
+                    <p class="text-muted small">Place this at lost & found office, security booths</p>
+                    <button onclick="window.print()" class="btn btn-success">
+                        <i class="fas fa-print me-2"></i> Print
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Claim Item QR -->
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 h-100">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);">
+                    <h4 class="mb-0"><i class="fas fa-hand-holding-heart me-2"></i> Claim Your Item</h4>
+                </div>
+                <div class="card-body text-center">
+                    <div class="border rounded-4 p-4 d-inline-block mb-3" style="background: white;">
+                        <img src="data:image/png;base64,{{ claim_qr }}" 
+                             alt="Claim Item QR" 
+                             style="width:200px; height:200px;">
+                    </div>
+                    <h6>Scan to Claim Your Lost Item</h6>
+                    <p class="text-muted small">Place this at lost & found office, customer service</p>
+                    <button onclick="window.print()" class="btn btn-warning">
+                        <i class="fas fa-print me-2"></i> Print
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Track Claim QR -->
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 h-100">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h4 class="mb-0"><i class="fas fa-search me-2"></i> Track Your Claim</h4>
+                </div>
+                <div class="card-body text-center">
+                    <div class="border rounded-4 p-4 d-inline-block mb-3" style="background: white;">
+                        <img src="data:image/png;base64,{{ track_qr }}" 
+                             alt="Track Claim QR" 
+                             style="width:200px; height:200px;">
+                    </div>
+                    <h6>Scan to Track Your Claim</h6>
+                    <p class="text-muted small">Place this at lost & found office, customer service</p>
+                    <button onclick="window.print()" class="btn btn-primary">
+                        <i class="fas fa-print me-2"></i> Print
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-header" style="background: linear-gradient(135deg, #1a1a2e, #16213e);">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i> QR Code Placement Guide</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="p-3 rounded-3" style="background: rgba(255,255,255,0.03);">
+                                <i class="fas fa-door-open fa-2x mb-2" style="color: #4facfe;"></i>
+                                <h6>Mall Entrances</h6>
+                                <small class="text-muted">Main entrances, parking entrances</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 rounded-3" style="background: rgba(255,255,255,0.03);">
+                                <i class="fas fa-utensils fa-2x mb-2" style="color: #f6d365;"></i>
+                                <h6>Food Court</h6>
+                                <small class="text-muted">All food court tables</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 rounded-3" style="background: rgba(255,255,255,0.03);">
+                                <i class="fas fa-film fa-2x mb-2" style="color: #f093fb;"></i>
+                                <h6>Entertainment Areas</h6>
+                                <small class="text-muted">Cinema, arcade, play areas</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 rounded-3" style="background: rgba(255,255,255,0.03);">
+                                <i class="fas fa-info-circle fa-2x mb-2" style="color: #667eea;"></i>
+                                <h6>Information Counters</h6>
+                                <small class="text-muted">Customer service, security</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="row mt-3">
+        <div class="col-md-12 text-center">
+            <a href="/staff/dashboard" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .navbar, .footer, .btn:not(:first-child), .mall-badge {
+        display: none !important;
+    }
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+        break-inside: avoid;
+    }
+    .card-header {
+        background: #667eea !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    .row {
+        page-break-inside: avoid;
+    }
+}
+</style>
+{% endblock %}
