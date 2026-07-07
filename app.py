@@ -940,6 +940,9 @@ def track_claim():
                 item = cursor.fetchone()
                 
                 if item:
+                    # ===== CONVERT TO DICT =====
+                    item = dict(item)
+                    
                     if item['status'] == 'ready_for_collection':
                         status_display = 'Ready for Collection ✅'
                     elif item['status'] == 'claimed':
@@ -974,6 +977,7 @@ def track_claim():
                 claim_data = cursor.fetchone()
                 
                 if claim_data:
+                    claim_data = dict(claim_data)
                     status_map = {
                         'pending': 'Pending Review ⏳',
                         'approved': 'Ready for Collection ✅',
@@ -1012,6 +1016,9 @@ def track_claim():
                 item = cursor.fetchone()
                 
                 if item:
+                    # ===== CONVERT TO DICT =====
+                    item = dict(item)
+                    
                     if item['status'] == 'ready_for_collection':
                         status_display = 'Ready for Collection ✅'
                     elif item['status'] == 'claimed':
@@ -1046,6 +1053,7 @@ def track_claim():
                 claim_data = cursor.fetchone()
                 
                 if claim_data:
+                    claim_data = dict(claim_data)
                     status_map = {
                         'pending': 'Pending Review ⏳',
                         'approved': 'Ready for Collection ✅',
